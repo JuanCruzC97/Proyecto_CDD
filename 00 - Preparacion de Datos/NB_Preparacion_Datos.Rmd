@@ -76,7 +76,7 @@ createVarData <- function(data){
 Importamos el dataset full.
 
 ```{r}
-data <- read_csv('Datasets/dataset_full.csv')
+data <- read_csv('../Datasets/dataset_full.csv')
 head(data)
 ```
 
