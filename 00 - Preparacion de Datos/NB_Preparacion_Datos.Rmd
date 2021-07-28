@@ -1,0 +1,34 @@
+---
+title: "Preparación de Datos"
+output: html_notebook
+---
+
+# Descripción
+
+Este notebook funciona como prueba inicial para analizar los datos de manera preliminar y entender el set que tenemos con el dataset full - Phishing2.
+
+# Paquetes
+
+```{r}
+library(readr)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(caret)
+library(recipes)
+```
+
+# Dataset
+
+Importamos el dataset full.
+
+```{r}
+data <- read_csv('Datasets/dataset_full.csv')
+head(data)
+```
+
+
+
+
+
