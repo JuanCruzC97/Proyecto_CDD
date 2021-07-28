@@ -2,7 +2,7 @@
 title: "Preparación de Datos"
 output: html_notebook
 ---
-
+#Prueba Tobias Git
 # Descripción
 
 Este notebook funciona como prueba inicial para analizar los datos de manera preliminar y entender el set que tenemos con el dataset full - Phishing2.
