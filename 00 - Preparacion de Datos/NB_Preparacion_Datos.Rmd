@@ -76,10 +76,14 @@ createVarData <- function(data){
 Importamos el dataset full.
 
 ```{r}
+#data <- read_csv('/Datasets/dataset_full.csv')
+#head(data)
+```
+
+```{r}
 data <- read_csv('../Datasets/dataset_full.csv')
 head(data)
 ```
-
 
 
 Tenemos 88647 observaciones y 111 variables explicativas, con una respuesta categórica.
@@ -392,6 +396,8 @@ data_log <- data_transX1 %>%
 ```{r}
 table(data_log$phishing)
 ```
+
+
 ```{r}
 13772/(6347+13772)
 ```
@@ -428,9 +434,6 @@ Evaluamos el modelo en el set de **train**.
 ```{r}
 confusionMatrix(as.factor(ifelse(logistic$fitted.values>0.5, 1, 0)), as.factor(train$phishing), positive = "1")
 ```
-
-
-
 
 ```{r}
 confusionMatrix(as.factor(ifelse(predict(logistic, newdata = test, type = 'response') > 0.5, 1, 0)), as.factor(test$phishing), positive = "1")
