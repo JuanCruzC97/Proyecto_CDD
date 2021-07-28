@@ -586,9 +586,18 @@ confusionMatrix(as.factor(ifelse(predict(logistic, newdata = test, type = 'respo
 
 
 
+```{r}
+var.out<-setdiff(names(data),nzv_vars)
+data_clean <- data[var.out]
+```
 
+COMENZAMOS A LIMPIAR EL DATASET EN FUNCION DE LO DESARROLLADO ANTERIORMENTE
 
-
+1° Removemos las de poca varianza
+```{r}
+var.out<-setdiff(names(data),nzv_vars)
+data_clean <- data[var.out]
+```
 
 
 
