@@ -596,13 +596,25 @@ data_clean <- data[var.out]
 
 COMENZAMOS A LIMPIAR EL DATASET EN FUNCION DE LO DESARROLLADO ANTERIORMENTE
 
-1° Removemos las de poca varianza
+1° Removemos las que solo tienen un valor único
 ```{r}
-var.out<-setdiff(names(data),nzv_vars)
-data_clean <- data[var.out]
+var.in <-  var_df %>%
+  filter(uniques==1)%>%
+  select(Variable)
+
+data_clean <- data[!names(data) %in% var.in[[1]] ]
 ```
 
+Analizamos cuales tienen la mayor cantidad de -1 graficamente para elegir que variabels descartar en base a esto 
+```{r}
+var_df2 <- createVarData(data_clean)
+var_df2
 
+p<-ggplot(data=var_df2, aes(x=reorder(Variable, NAs), y=NAs)) +
+  geom_bar(stat="identity")+
+  coord_flip()
+p
+```
 
 
 
