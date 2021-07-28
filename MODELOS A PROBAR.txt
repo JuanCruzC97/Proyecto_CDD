@@ -1,3 +1,12 @@
+PREPARACIÓN DE DATOS: 
+Borrar duplicados
+Elegir corte de cantidad de -1 aceptables 
+Definir que variables entran en el analisis
+Fijarse de las variables servibles, cuantas podemos construir nosotros desde un dataset de URL´s
+
+
+
+
 ANALISIS EXPLORATORIO: 
 Regresion logística
 Cluster para ver si encontramos algo 
