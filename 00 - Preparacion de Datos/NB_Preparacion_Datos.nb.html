@@ -221,16 +221,69 @@ pre code {
 </div>
 <div id="paquetes" class="section level1">
 <h1>Paquetes</h1>
+<p>Paquetes usados.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkcilcbmxpYnJhcnkocmVhZHhsKVxubGlicmFyeShkcGx5cilcbmxpYnJhcnkoZ2dwbG90MilcbmxpYnJhcnkoY29ycnBsb3QpXG5saWJyYXJ5KGNhcmV0KVxubGlicmFyeShyZWNpcGVzKVxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShyZWFkcilcbmxpYnJhcnkocmVhZHhsKVxubGlicmFyeShkcGx5cilcbmxpYnJhcnkoZ2dwbG90MilcbmxpYnJhcnkoY29ycnBsb3QpXG5saWJyYXJ5KGNhcmV0KVxubGlicmFyeShyZWNpcGVzKVxubGlicmFyeShyc2FtcGxlKVxuYGBgIn0= -->
 <pre class="r"><code>library(readr)
 library(readxl)
 library(dplyr)
 library(ggplot2)
 library(corrplot)
 library(caret)
-library(recipes)</code></pre>
+library(recipes)
+library(rsample)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="utils" class="section level1">
+<h1>Utils</h1>
+<p>Esta función creada genera un dataset donde cada fila es una variable del dataset evaluado. Para cada variable del dataset evaluado se informa la cantidad de valores iguales a -1 como NA,</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YSA8LSBmdW5jdGlvbihkYXRhKXtcbiAgbnp2X3ZhcnMgPC0gbmFtZXMoZGF0YSlbbmVhclplcm9WYXIoZGF0YSAlPiUgc2VsZWN0KC1waGlzaGluZykpXVxuICBuenZfdmFyc1xuICBcbiAgdmFyaWFibGVzIDwtIG5hbWVzKGRhdGEpXG4gIHZlY19uYSA8LSBjKClcbiAgXG4gIGkgPSAxXG4gIGZvciAodmFyIGluIHZhcmlhYmxlcykge1xuICAgIHZlY19uYVtpXSA8LSBzdW0oZGF0YVt2YXJdID09IC0xKVxuICAgIGkgPSBpICsgMVxuICAgICNwcmludChwYXN0ZSh2YXIsIFwiTkFzOlwiLCBzdW0oZGF0YVt2YXJdID09IC0xKSkpXG4gIH1cbiAgXG4gIHZhcl9kZiA9IGRhdGEuZnJhbWUoXCJWYXJpYWJsZVwiID0gdmFyaWFibGVzLCBcIk5Bc1wiID0gdmVjX25hKVxuICBcbiAgdmFyX2RmIDwtIHZhcl9kZiAlPiVcbiAgbXV0YXRlKG56diA9IGlmZWxzZSh2YXJpYWJsZXMgJWluJSBuenZfdmFycywgMSwgMCksXG4gICAgICAgICBzZCA9IHJvdW5kKGFwcGx5KGRhdGEsIDIsIHNkKSwgNSksXG4gICAgICAgICBpZCA9IHNlcSgxOmxlbmd0aCh2YXJfZGYkVmFyaWFibGUpKSlcbiAgXG4gIHVuaXF1ZXMgPC0gKGFwcGx5KGRhdGEsIDIsIHVuaXF1ZSkpXG4gIHZlY191bmlxdWVzIDwtIGMoKVxuICB2ZWNfbWluIDwtIGMoKVxuICB2ZWNfbWF4IDwtIGMoKVxuICBqID0gMVxuICBcbiAgZm9yIChlbGVtZW50IGluIHVuaXF1ZXMpe1xuICAgIHZlY191bmlxdWVzW2pdIDwtIGxlbmd0aChlbGVtZW50KVxuICAgIHZlY19taW5bal0gPC0gbWluKGVsZW1lbnQpXG4gICAgdmVjX21heFtqXSA8LSBtYXgoZWxlbWVudClcbiAgICBqID0gaiArIDFcbiAgfVxuICBcbiAgdmFyX2RmIDwtIHZhcl9kZiAlPiVcbiAgICBtdXRhdGUodW5pcXVlcyA9IHZlY191bmlxdWVzLFxuICAgICAgICAgICBtaW4gPSB2ZWNfbWluLFxuICAgICAgICAgICBtYXggPSB2ZWNfbWF4KVxuICBcbiAgcmV0dXJuKHZhcl9kZilcbn1cbmBgYCJ9 -->
+<pre class="r"><code>createVarData &lt;- function(data){
+  nzv_vars &lt;- names(data)[nearZeroVar(data %&gt;% select(-phishing))]
+  nzv_vars
+  
+  variables &lt;- names(data)
+  vec_na &lt;- c()
+  
+  i = 1
+  for (var in variables) {
+    vec_na[i] &lt;- sum(data[var] == -1)
+    i = i + 1
+    #print(paste(var, &quot;NAs:&quot;, sum(data[var] == -1)))
+  }
+  
+  var_df = data.frame(&quot;Variable&quot; = variables, &quot;NAs&quot; = vec_na)
+  
+  var_df &lt;- var_df %&gt;%
+  mutate(nzv = ifelse(variables %in% nzv_vars, 1, 0),
+         sd = round(apply(data, 2, sd), 5),
+         id = seq(1:length(var_df$Variable)))
+  
+  uniques &lt;- (apply(data, 2, unique))
+  vec_uniques &lt;- c()
+  vec_min &lt;- c()
+  vec_max &lt;- c()
+  j = 1
+  
+  for (element in uniques){
+    vec_uniques[j] &lt;- length(element)
+    vec_min[j] &lt;- min(element)
+    vec_max[j] &lt;- max(element)
+    j = j + 1
+  }
+  
+  var_df &lt;- var_df %&gt;%
+    mutate(uniques = vec_uniques,
+           min = vec_min,
+           max = vec_max)
+  
+  return(var_df)
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -240,7 +293,21 @@ library(recipes)</code></pre>
 <p>Importamos el dataset full.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6NiwibmNvbCI6MTEyLCJzdW1tYXJ5Ijp7IkEgdGliYmxlIjpbIjYgeCAxMTIiXX19LCJyZGYiOiJINHNJQUFBQUFBQUFBKzFhUFd3Y1JSUmVPN2FUT0Q3N2JKOGRpQ2dpYW54S1pCRWxCYm90QUVHRmhBeWs0alRlRy90VzN0dGQ3OHc1ZGhmU0lVb0tPaFRScEFrTkZSSUZFUTJJTmcyS2hEQkNJSVFVRVVWQ1NpaGladWRuYjk2YnZkZytPU0dSYnVYejIvbmVmdnZlelBmMjdWeWNkMSsvdkR4NWVkTHp2R1BlMklqNFBTNU92ZkgzVnQ1Y3V1aDVZNk5pTU9LTmVTZHp1eTNjOCtJa0ZaOXA4Wm53VDNqeThHdmFldHBXNGJoeHp6T0g1SG1IUHdEUHVoK0kwNDlucmpmNUZ1TmEzL3NjU1o0bTNtRjVBOGNia0Rkb3ZDSHYrZVQxZXg3NldjUHpMMm5leHE2eWRUMWU4WlZkMXVNTGlLY0grOW1qN2hORDNwQTM1QTNPSzk3ajV2MXUzdmN2SWJ5S2VPYzFmazdiVjdSZFJ2YjgwZVE1S0EvM1FYUDQybjU3YjdCNGgrWHRGMisvL1l2aCtRWHR5ZVE1NUExNXp3TFBQNnNHL2h2S0ZzL0RPNUJuN2UvQmM0Uy9QNWp4c3pLL0lXL0lHL0o2dkdLLzhUSjBtbkUvSHNiTnVKODlLaDd1SjA4NjNxQThzNTk0YXZFRzVBMGFiOGg3dm5sKzYvclRqWGZJNThFNy9LSDJJVDkrdkhMandVaTk4Y3VEMzI1T3JmN2V1SHYvanhzaC9hZHg1N1VmdnQ1WWVOaTQ4L2FmSDMxNGFiUHg4d2ZIN3QvKy9sTWNyNlRmZ1FQbjZkLzk4cnFjMzYrZlNkRC82bk5sYnorOEt1MWZiKzFLKzlQZnQyeGVzUzdYWGdEM0xmQnYzbGUyMTVjaGIvVldPWStkVlhickhGd1g3VCtvTGVhbkIvdmEzdmU4MG45UHh0OERTM0FWNzVOZGhYLzNoYkxYMnNwbUtwSi84NHkyMDQrTlZ6SWZQRDVRbldIK1FYa2x4Ly82UGZ3eDY0REc0QThUNHpIcFVDWk9xbDcreHdrRm50cmtPODFXd3B2ZExOTFFkQTYxZDlJMmpTMTBOa2U3Y1l0bVVSaFR5MUhKSFN3aXJHMkJ0UnpjN0ZMR3d5VHVrR3dERStobWwwUVdPSm1EeEU1RFprYmlsZ1hOUytaMkVKRU95Vy9zWkpHU3dFbU5oMUhMQVlPazB5RVdPSldEYWRSbEZsYVZDVEJPczVEWitjL0k5Ukh6NVdRZEwxc3JpU0tTNFl0VG1nVTBkaWJISTN0eWt4R04xM25idlNNWG53NEpZMXNJTFE5dzFLQkN3RmZ0aVFUdzA0NU9MazFKQmZDS1ZndUEwMFl3Z0M1aXpVcnlrcks1dUZMT3haVjRBSjhwOUFQd1BKQVF1T1pzRmQwRjFrSzZGS09sUzlsS3J0QUlKVkJSbzZiUzFoU2JCdk1mOHh6V0dNMjJhTllNb3JEODdySU93b3dHUE1sMmJNVk5LU0RmYVZRTnlEMXZGUVJ5blhGcm9veXN5d0s1cXFZeUVENWJGQWR5dk9qVVIybW1xa1RLWExwS3lseTZVSkJycmxjcnlMTUl5d1Y1RjBERmxFbGhpcWFNV05RTlhyQUNRRVZpUkY4TEl3bzZqOUxiZ3VlZzFKWm51cWV5aFM0NEFtT0swdFpDVDJsWkxXaktLR3BoTlN5bWs0dlVFYU5LUW93cTlTeTBVZ2huZ2JOQU04dFJ0ZVhDaTZpVndwY2JrZXlaNStkUW1xSXZweVFqSFZiU2w0RUQ5V1hncy9veXdOMis3TktVU0FBM2ZSbUFSVjhHcU5PWFMvS1NZcm00a3N2RmxXQUE3L1ZsQU1PK0RGeWdMN3NMcklWektVWTZ1QjVxQk9XYnk5KzdhVWFaYzduY2hBQmtpb28rSE9XZDJ0cEE4TEJEbTRLZkpqRXpaVEtwZXpwTDF6UXlRWmpWM3hjbFNWOUVBaDV1eVZVdjg5THROTXhzcjF6RU1NMURKdEVXYmRtdzNOUEpWd2VRdTdQZGhPZ1U1MUd6blRDZUU0d0tYTHl1R0l1YUFjMTR1QllHaElOSExhT3FOeFVpaXpWb3JpZkp1bmdnUWxIUDIrWStPdkVTVnlXbnNIYVNjUm9YaVo5STJ5RnJoL0U2MnFDZXpKSXJkYk5KcllqUDZGWHhhMjl2NzErOGt4VlZ5OHhPZHFSUWdIQlNYOHZ5K1huZUkwUTVucVQ1aWdyU2FQNS9jOFlSZVNSRHdFdzN6ak5wTFFYdGJyeXg5R29lUUxyVlVkSG5FOVo1cWtLTzd1bGJqWnRDRU1VbkhueVRlMFJXYWJIREV6T1dFNjZuV1Joek14T0JzanBQT0NuMmhrRVNHVVRPelh2MEg1Y0xaUDJTSkFBQSJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSA8LSByZWFkX2NzdignRGF0YXNldHMvZGF0YXNldF9mdWxsLmNzdicpXG5gYGAifQ== -->
+<pre class="r"><code>data &lt;- read_csv(&#39;Datasets/dataset_full.csv&#39;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiXG7ilIDilIAgQ29sdW1uIHNwZWNpZmljYXRpb24g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSAXG5jb2xzKFxuICAuZGVmYXVsdCA9IGNvbF9kb3VibGUoKVxuKVxu4oS5IFVzZSBgc3BlYygpYCBmb3IgdGhlIGZ1bGwgY29sdW1uIHNwZWNpZmljYXRpb25zLlxuIn0= -->
+<pre><code>
+── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+cols(
+  .default = col_double()
+)
+ℹ Use `spec()` for the full column specifications.</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVhZChkYXRhKVxuYGBgIn0= -->
+<pre class="r"><code>head(data)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6NiwibmNvbCI6MTEyLCJzdW1tYXJ5Ijp7IkEgdGliYmxlIjpbIjYgeCAxMTIiXX19LCJyZGYiOiJINHNJQUFBQUFBQUFBKzFhUFd3Y1JSUmVPN1pKTGo3bmJKOGRpQ2dpYW55S1pRbVJBdDBXZ0tCQ1FnWlNjUnJ2algwcjcrMnVkK2NjdXd2cEVDVUZIWXBvMG9TR0NvbUNpQVpFbXdaRlFoZ2hFRUtLaUNJaEpSUXg4N3MzNzgxZWJKK2NrRWkzOHZudGZHKy9uVGZ6dlhrNzYvTzdyMTlhcVZ5cWVKNTN3cHNZNDc4bithazMrZDdxbTB1dmV0N0VPRytNZVJQZUtXRjN1SHVlbjZUOE04TS9VLzVKVHg1K1hWdFAyeHBzTis5NjVwQTg3K2dINEZuM0EvME00cG5yVGJ4RnV6N3dQc2NTcCtudnFMeWgreHVTTjJ4L0k5Nnp5UnUwSGdaWncvTXZhdDdtbnJJTjNWNzFsVjNSN1ZjUVR6Y09zc2RkSjBhOEVXL0VHNTVYUE1mTjg5MDg3MTlFZUEzeGxqVitRZHVYdFYxQmR2bDQ0aHlXaCt1Z09YeHR2NzA3WEg5SDVSM1UzMEg3RjhQekM5cmppWFBFRy9HZUJwNS9Yalg4TjVRdDFzTTdrR2Z0NzhFNnd1OFBwdjIwakcvRUcvRkd2RDZ2MkcrOEJKMm1QWWlIY2RNZVpJK0xoK3ZKNCs1dldKN1pUenl4L29ia0RkdmZpUGRzOC96MnRTZmIzeEhYZzNmMFErMURmdng0OWZyOXNVYnpsL3UvM1poZSs3MTU1OTRmMTBQNlQvUDJhejk4dmJud29Ibjc3VDgvK3ZEaVZ2UG5EMDdjdS9YOXA3aS9rbm9IRGh5bmYrZkxhM0o4djM0bVFmK3J6NVc5OWVDS3RIKzl0U2Z0VDMvZnRIbkZ2Rng5SHR5M3dMOTVYOWwrWFlhOHRadmx2UHk4c3RzWDRMeG8vMkZ0TVQ3ZE9ORDIzL05LLzU2TTN3TkxjTlhmSjNzSy8rNExaYTkybE0xVVQvNk5jOXJPUExLL2t2SGc5cUh5RFBNUHl5czUvdGYzOEVmTUEycURMeVltWTlLbE9UK3BlZUxMQ1FXZTNtSzdyWGJDV3IwczB0Q01nRHE3YVlmR0Zqb3IwRjdjcGxrVXh0UnlWSVVqajBqZXNjQzZBTGQ2TkdkaEVuZEp0b2tKZEt0SElndXNDSkRZWWNqSVNOeTJvSG5KM0FraTBpWGl4azRVS1FtYzBGZ1l0UjB3U0xwZFlvSFRBa3lqWG01aE5SbEF6bWdXNW5iOForVDg4UEV5c29HbnJaMUVFY253eFNuTkFobzdnMk9SUGJoS1JPTU4xbkh2eVBpblM4TFlGa0xMQXh4MXFCRHcxZm9pQWZ5c281TkxVMUlCdktyVkF1Q01FUXlnaTFpemtyaWtiQzZ1bEhOeEpSN0F6eFQ2QVhnZVNBaGNjN2FLN2dScklWMkswZEtsYkNlWGFZUUNxS3BXUzJscmtrMkQ0c2VzdzNwT3MyMmF0WUlvTEwrN3pJTXdvd0ZMc2wxYmNaTUt5SGNXWlFOeXoxc0pnVnpuM0p3b0krdTBRSzZheVF5RXp4YkpnUnd2T1BsUkdxbEtrVEtYenBJeWwwNFU1SnJyNXdyeUxNSjBRZDRGa0RGbFVwaWtLU01XZVlNbnJBQlFraGpSMThPSWdzcWo5TGJnT1NpMTVabnBxMnloQzQ3QW1LSzB0ZERUV2xZTG1qYUtXbGdkaStuRUluWEVxSklRbzBvOUM2MFd3bG5nTE5ETWN0UnN1ZkFrYXFYdzVVWWtlK1RpSEVwVDFPV1VaS1NibDlSbDRFQjFHZmlzdWd4d3R5NjdOQ1VTd0UxZEJtQlJsd0hxMU9XU3VLUllMcTdrY25FbEdNRDdkUm5Bc0M0REY2akw3Z1JyNFZ5S2tRN09oMnBCK2ViRWN6Zk5hTzVjTGpjaEFKbW12QTVIb2xKYkd3Z1dkbW1MODlNa3prMmFWSFJOejlOMWpVeVIzS3J2aTVLa0x5SUJDN2ZsckpkNTZVNGFaclpYVG1LWWlpNlRhSnUyYlZqdTZlU2pBOGpkM1dsQmRKcXhxTlZKY2lZSVJnWEdIMWQ1SHJVQ21yRndQUXdJQTBzdG82bzJGU0x6T1dodEpNa0dYeEFoeitjZGN4OGRlSW1yS2loNUo4a1lqWXZBVDZhZE1PK0U4UWJhb0o3S2tzc05zMG10OHMvNEZmNXJmMy8vWDd5VDVWbWJtNTNzV0tFQVlhU3hub254ZWQ1RFJIa3VTY1dNY3RLNCtOK2NTVVFleXhCUTY4VWlrdlpTME9uRm0wdkw0cXU0aXZTcm82clBwNnp6VlBVNXZxL3ZOV2t5Z1djZlgva20rSWlzMFdLTHg0Y3NSOXhJc3pCbVppZ2N6UnNzWWFUWUhBWkpaQkE1T08vaGY0RHA4aDJUSkFBQSJ9 -->
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["qty_dot_url"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["qty_hyphen_url"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["qty_underline_url"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["qty_slash_url"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["qty_questionmark_url"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["qty_equal_url"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["qty_at_url"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["qty_and_url"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["qty_exclamation_url"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["qty_space_url"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["qty_tilde_url"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["qty_comma_url"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["qty_plus_url"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["qty_asterisk_url"],"name":[14],"type":["dbl"],"align":["right"]},{"label":["qty_hashtag_url"],"name":[15],"type":["dbl"],"align":["right"]},{"label":["qty_dollar_url"],"name":[16],"type":["dbl"],"align":["right"]},{"label":["qty_percent_url"],"name":[17],"type":["dbl"],"align":["right"]},{"label":["qty_tld_url"],"name":[18],"type":["dbl"],"align":["right"]},{"label":["length_url"],"name":[19],"type":["dbl"],"align":["right"]},{"label":["qty_dot_domain"],"name":[20],"type":["dbl"],"align":["right"]},{"label":["qty_hyphen_domain"],"name":[21],"type":["dbl"],"align":["right"]},{"label":["qty_underline_domain"],"name":[22],"type":["dbl"],"align":["right"]},{"label":["qty_slash_domain"],"name":[23],"type":["dbl"],"align":["right"]},{"label":["qty_questionmark_domain"],"name":[24],"type":["dbl"],"align":["right"]},{"label":["qty_equal_domain"],"name":[25],"type":["dbl"],"align":["right"]},{"label":["qty_at_domain"],"name":[26],"type":["dbl"],"align":["right"]},{"label":["qty_and_domain"],"name":[27],"type":["dbl"],"align":["right"]},{"label":["qty_exclamation_domain"],"name":[28],"type":["dbl"],"align":["right"]},{"label":["qty_space_domain"],"name":[29],"type":["dbl"],"align":["right"]},{"label":["qty_tilde_domain"],"name":[30],"type":["dbl"],"align":["right"]},{"label":["qty_comma_domain"],"name":[31],"type":["dbl"],"align":["right"]},{"label":["qty_plus_domain"],"name":[32],"type":["dbl"],"align":["right"]},{"label":["qty_asterisk_domain"],"name":[33],"type":["dbl"],"align":["right"]},{"label":["qty_hashtag_domain"],"name":[34],"type":["dbl"],"align":["right"]},{"label":["qty_dollar_domain"],"name":[35],"type":["dbl"],"align":["right"]},{"label":["qty_percent_domain"],"name":[36],"type":["dbl"],"align":["right"]},{"label":["qty_vowels_domain"],"name":[37],"type":["dbl"],"align":["right"]},{"label":["domain_length"],"name":[38],"type":["dbl"],"align":["right"]},{"label":["domain_in_ip"],"name":[39],"type":["dbl"],"align":["right"]},{"label":["server_client_domain"],"name":[40],"type":["dbl"],"align":["right"]},{"label":["qty_dot_directory"],"name":[41],"type":["dbl"],"align":["right"]},{"label":["qty_hyphen_directory"],"name":[42],"type":["dbl"],"align":["right"]},{"label":["qty_underline_directory"],"name":[43],"type":["dbl"],"align":["right"]},{"label":["qty_slash_directory"],"name":[44],"type":["dbl"],"align":["right"]},{"label":["qty_questionmark_directory"],"name":[45],"type":["dbl"],"align":["right"]},{"label":["qty_equal_directory"],"name":[46],"type":["dbl"],"align":["right"]},{"label":["qty_at_directory"],"name":[47],"type":["dbl"],"align":["right"]},{"label":["qty_and_directory"],"name":[48],"type":["dbl"],"align":["right"]},{"label":["qty_exclamation_directory"],"name":[49],"type":["dbl"],"align":["right"]},{"label":["qty_space_directory"],"name":[50],"type":["dbl"],"align":["right"]},{"label":["qty_tilde_directory"],"name":[51],"type":["dbl"],"align":["right"]},{"label":["qty_comma_directory"],"name":[52],"type":["dbl"],"align":["right"]},{"label":["qty_plus_directory"],"name":[53],"type":["dbl"],"align":["right"]},{"label":["qty_asterisk_directory"],"name":[54],"type":["dbl"],"align":["right"]},{"label":["qty_hashtag_directory"],"name":[55],"type":["dbl"],"align":["right"]},{"label":["qty_dollar_directory"],"name":[56],"type":["dbl"],"align":["right"]},{"label":["qty_percent_directory"],"name":[57],"type":["dbl"],"align":["right"]},{"label":["directory_length"],"name":[58],"type":["dbl"],"align":["right"]},{"label":["qty_dot_file"],"name":[59],"type":["dbl"],"align":["right"]},{"label":["qty_hyphen_file"],"name":[60],"type":["dbl"],"align":["right"]},{"label":["qty_underline_file"],"name":[61],"type":["dbl"],"align":["right"]},{"label":["qty_slash_file"],"name":[62],"type":["dbl"],"align":["right"]},{"label":["qty_questionmark_file"],"name":[63],"type":["dbl"],"align":["right"]},{"label":["qty_equal_file"],"name":[64],"type":["dbl"],"align":["right"]},{"label":["qty_at_file"],"name":[65],"type":["dbl"],"align":["right"]},{"label":["qty_and_file"],"name":[66],"type":["dbl"],"align":["right"]},{"label":["qty_exclamation_file"],"name":[67],"type":["dbl"],"align":["right"]},{"label":["qty_space_file"],"name":[68],"type":["dbl"],"align":["right"]},{"label":["qty_tilde_file"],"name":[69],"type":["dbl"],"align":["right"]},{"label":["qty_comma_file"],"name":[70],"type":["dbl"],"align":["right"]},{"label":["qty_plus_file"],"name":[71],"type":["dbl"],"align":["right"]},{"label":["qty_asterisk_file"],"name":[72],"type":["dbl"],"align":["right"]},{"label":["qty_hashtag_file"],"name":[73],"type":["dbl"],"align":["right"]},{"label":["qty_dollar_file"],"name":[74],"type":["dbl"],"align":["right"]},{"label":["qty_percent_file"],"name":[75],"type":["dbl"],"align":["right"]},{"label":["file_length"],"name":[76],"type":["dbl"],"align":["right"]},{"label":["qty_dot_params"],"name":[77],"type":["dbl"],"align":["right"]},{"label":["qty_hyphen_params"],"name":[78],"type":["dbl"],"align":["right"]},{"label":["qty_underline_params"],"name":[79],"type":["dbl"],"align":["right"]},{"label":["qty_slash_params"],"name":[80],"type":["dbl"],"align":["right"]},{"label":["qty_questionmark_params"],"name":[81],"type":["dbl"],"align":["right"]},{"label":["qty_equal_params"],"name":[82],"type":["dbl"],"align":["right"]},{"label":["qty_at_params"],"name":[83],"type":["dbl"],"align":["right"]},{"label":["qty_and_params"],"name":[84],"type":["dbl"],"align":["right"]},{"label":["qty_exclamation_params"],"name":[85],"type":["dbl"],"align":["right"]},{"label":["qty_space_params"],"name":[86],"type":["dbl"],"align":["right"]},{"label":["qty_tilde_params"],"name":[87],"type":["dbl"],"align":["right"]},{"label":["qty_comma_params"],"name":[88],"type":["dbl"],"align":["right"]},{"label":["qty_plus_params"],"name":[89],"type":["dbl"],"align":["right"]},{"label":["qty_asterisk_params"],"name":[90],"type":["dbl"],"align":["right"]},{"label":["qty_hashtag_params"],"name":[91],"type":["dbl"],"align":["right"]},{"label":["qty_dollar_params"],"name":[92],"type":["dbl"],"align":["right"]},{"label":["qty_percent_params"],"name":[93],"type":["dbl"],"align":["right"]},{"label":["params_length"],"name":[94],"type":["dbl"],"align":["right"]},{"label":["tld_present_params"],"name":[95],"type":["dbl"],"align":["right"]},{"label":["qty_params"],"name":[96],"type":["dbl"],"align":["right"]},{"label":["email_in_url"],"name":[97],"type":["dbl"],"align":["right"]},{"label":["time_response"],"name":[98],"type":["dbl"],"align":["right"]},{"label":["domain_spf"],"name":[99],"type":["dbl"],"align":["right"]},{"label":["asn_ip"],"name":[100],"type":["dbl"],"align":["right"]},{"label":["time_domain_activation"],"name":[101],"type":["dbl"],"align":["right"]},{"label":["time_domain_expiration"],"name":[102],"type":["dbl"],"align":["right"]},{"label":["qty_ip_resolved"],"name":[103],"type":["dbl"],"align":["right"]},{"label":["qty_nameservers"],"name":[104],"type":["dbl"],"align":["right"]},{"label":["qty_mx_servers"],"name":[105],"type":["dbl"],"align":["right"]},{"label":["ttl_hostname"],"name":[106],"type":["dbl"],"align":["right"]},{"label":["tls_ssl_certificate"],"name":[107],"type":["dbl"],"align":["right"]},{"label":["qty_redirects"],"name":[108],"type":["dbl"],"align":["right"]},{"label":["url_google_index"],"name":[109],"type":["dbl"],"align":["right"]},{"label":["domain_google_index"],"name":[110],"type":["dbl"],"align":["right"]},{"label":["url_shortened"],"name":[111],"type":["dbl"],"align":["right"]},{"label":["phishing"],"name":[112],"type":["dbl"],"align":["right"]}],"data":[{"1":"3","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","19":"25","20":"2","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"4","38":"17","39":"0","40":"0","41":"1","42":"0","43":"0","44":"1","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"8","59":"1","60":"0","61":"0","62":"0","63":"0","64":"0","65":"0","66":"0","67":"0","68":"0","69":"0","70":"0","71":"0","72":"0","73":"0","74":"0","75":"0","76":"7","77":"-1","78":"-1","79":"-1","80":"-1","81":"-1","82":"-1","83":"-1","84":"-1","85":"-1","86":"-1","87":"-1","88":"-1","89":"-1","90":"-1","91":"-1","92":"-1","93":"-1","94":"-1","95":"-1","96":"-1","97":"0","98":"0.207316","99":"0","100":"60781","101":"-1","102":"-1","103":"1","104":"2","105":"0","106":"892","107":"0","108":"0","109":"0","110":"0","111":"0","112":"1"},{"1":"5","2":"0","3":"1","4":"3","5":"0","6":"3","7":"0","8":"2","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"3","19":"223","20":"2","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"5","38":"16","39":"0","40":"0","41":"3","42":"0","43":"0","44":"3","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"42","59":"1","60":"0","61":"0","62":"0","63":"0","64":"0","65":"0","66":"0","67":"0","68":"0","69":"0","70":"0","71":"0","72":"0","73":"0","74":"0","75":"0","76":"9","77":"0","78":"0","79":"1","80":"0","81":"0","82":"3","83":"0","84":"2","85":"0","86":"0","87":"0","88":"0","89":"0","90":"0","91":"0","92":"0","93":"0","94":"165","95":"0","96":"3","97":"0","98":"0.499566","99":"-1","100":"36024","101":"579","102":"150","103":"1","104":"2","105":"1","106":"9540","107":"1","108":"0","109":"0","110":"0","111":"0","112":"1"},{"1":"2","2":"0","3":"0","4":"1","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","19":"15","20":"2","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"3","38":"14","39":"0","40":"0","41":"0","42":"0","43":"0","44":"1","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"1","59":"0","60":"0","61":"0","62":"0","63":"0","64":"0","65":"0","66":"0","67":"0","68":"0","69":"0","70":"0","71":"0","72":"0","73":"0","74":"0","75":"0","76":"0","77":"-1","78":"-1","79":"-1","80":"-1","81":"-1","82":"-1","83":"-1","84":"-1","85":"-1","86":"-1","87":"-1","88":"-1","89":"-1","90":"-1","91":"-1","92":"-1","93":"-1","94":"-1","95":"-1","96":"-1","97":"0","98":"0.935901","99":"0","100":"4766","101":"-1","102":"-1","103":"1","104":"2","105":"3","106":"589","107":"1","108":"0","109":"0","110":"0","111":"0","112":"0"},{"1":"4","2":"0","3":"2","4":"5","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","19":"81","20":"2","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"7","38":"19","39":"0","40":"0","41":"2","42":"0","43":"2","44":"5","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"62","59":"1","60":"0","61":"0","62":"0","63":"0","64":"0","65":"0","66":"0","67":"0","68":"0","69":"0","70":"0","71":"0","72":"0","73":"0","74":"0","75":"0","76":"9","77":"-1","78":"-1","79":"-1","80":"-1","81":"-1","82":"-1","83":"-1","84":"-1","85":"-1","86":"-1","87":"-1","88":"-1","89":"-1","90":"-1","91":"-1","92":"-1","93":"-1","94":"-1","95":"-1","96":"-1","97":"0","98":"0.410021","99":"0","100":"20454","101":"-1","102":"-1","103":"1","104":"2","105":"0","106":"292","107":"1","108":"0","109":"0","110":"0","111":"0","112":"1"},{"1":"2","2":"0","3":"0","4":"0","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","19":"19","20":"2","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"5","38":"19","39":"0","40":"0","41":"-1","42":"-1","43":"-1","44":"-1","45":"-1","46":"-1","47":"-1","48":"-1","49":"-1","50":"-1","51":"-1","52":"-1","53":"-1","54":"-1","55":"-1","56":"-1","57":"-1","58":"-1","59":"-1","60":"-1","61":"-1","62":"-1","63":"-1","64":"-1","65":"-1","66":"-1","67":"-1","68":"-1","69":"-1","70":"-1","71":"-1","72":"-1","73":"-1","74":"-1","75":"-1","76":"-1","77":"-1","78":"-1","79":"-1","80":"-1","81":"-1","82":"-1","83":"-1","84":"-1","85":"-1","86":"-1","87":"-1","88":"-1","89":"-1","90":"-1","91":"-1","92":"-1","93":"-1","94":"-1","95":"-1","96":"-1","97":"0","98":"0.410761","99":"0","100":"53831","101":"6998","102":"306","103":"1","104":"2","105":"1","106":"3597","107":"0","108":"1","109":"0","110":"0","111":"0","112":"0"},{"1":"1","2":"0","3":"0","4":"2","5":"0","6":"0","7":"0","8":"0","9":"0","10":"0","11":"0","12":"0","13":"0","14":"0","15":"0","16":"0","17":"0","18":"1","19":"22","20":"1","21":"0","22":"0","23":"0","24":"0","25":"0","26":"0","27":"0","28":"0","29":"0","30":"0","31":"0","32":"0","33":"0","34":"0","35":"0","36":"0","37":"4","38":"17","39":"0","40":"0","41":"0","42":"0","43":"0","44":"2","45":"0","46":"0","47":"0","48":"0","49":"0","50":"0","51":"0","52":"0","53":"0","54":"0","55":"0","56":"0","57":"0","58":"5","59":"0","60":"0","61":"0","62":"0","63":"0","64":"0","65":"0","66":"0","67":"0","68":"0","69":"0","70":"0","71":"0","72":"0","73":"0","74":"0","75":"0","76":"0","77":"-1","78":"-1","79":"-1","80":"-1","81":"-1","82":"-1","83":"-1","84":"-1","85":"-1","86":"-1","87":"-1","88":"-1","89":"-1","90":"-1","91":"-1","92":"-1","93":"-1","94":"-1","95":"-1","96":"-1","97":"0","98":"0.458436","99":"-1","100":"25535","101":"9","102":"355","103":"1","104":"3","105":"3","106":"3591","107":"1","108":"0","109":"0","110":"0","111":"0","112":"1"}],"options":{"columns":{"min":{},"max":[10],"total":[112]},"rows":{"min":[10],"max":[10],"total":[6]},"pages":{}}}
@@ -249,10 +316,882 @@ library(recipes)</code></pre>
 <!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<p>Tenemos 88647 observaciones y 111 variables explicativas, con una respuesta categórica.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGltKGRhdGEpXG5gYGAifQ== -->
+<pre class="r"><code>dim(data)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDg4NjQ3ICAgMTEyXG4ifQ== -->
+<pre><code>[1] 88647   112</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos un resumen de la estructura del dataset.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2xpbXBzZShkYXRhKVxuYGBgIn0= -->
+<pre class="r"><code>glimpse(data)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiUm93czogODgsNjQ3XG5Db2x1bW5zOiAxMTJcbiQgcXR5X2RvdF91cmwgICAgICAgICAgICAgICAgPGRibD4gMywgNSwgMiwgNCwgMiwgMSwgMiwgMiwgMiwgMSwgMiwgMSwgMiwgMiwgMywgMywgMiwgMywgNCwgMywgNCwgMiwgNCwgMiwgMiwgMywgMiwgMiwgMiwgMywgNCwgMiwgMiwgMiwgMiwg4oCmXG4kIHF0eV9oeXBoZW5fdXJsICAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDEsIDAsIDIsIDAsIDAsIDAsIDEsIDAsIDAsIDAsIDAsIDEsIDEsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDEsIDQsIDAsIDAsIDAsIOKAplxuJCBxdHlfdW5kZXJsaW5lX3VybCAgICAgICAgICA8ZGJsPiAwLCAxLCAwLCAyLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAxLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAzLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X3NsYXNoX3VybCAgICAgICAgICAgICAgPGRibD4gMSwgMywgMSwgNSwgMCwgMiwgMCwgMywgMCwgMiwgMCwgMywgNCwgMCwgMiwgNSwgMCwgMCwgMiwgMCwgMCwgMSwgNSwgMCwgMCwgMSwgMCwgMSwgMiwgMCwgMywgNSwgMCwgMCwgMCwg4oCmXG4kIHF0eV9xdWVzdGlvbm1hcmtfdXJsICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfZXF1YWxfdXJsICAgICAgICAgICAgICA8ZGJsPiAwLCAzLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAzLCAwLCAwLCAxLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X2F0X3VybCAgICAgICAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMSwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9hbmRfdXJsICAgICAgICAgICAgICAgIDxkYmw+IDAsIDIsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDIsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfZXhjbGFtYXRpb25fdXJsICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X3NwYWNlX3VybCAgICAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV90aWxkZV91cmwgICAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfY29tbWFfdXJsICAgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X3BsdXNfdXJsICAgICAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9hc3Rlcmlza191cmwgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfaGFzaHRhZ191cmwgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X2RvbGxhcl91cmwgICAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9wZXJjZW50X3VybCAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfdGxkX3VybCAgICAgICAgICAgICAgICA8ZGJsPiAxLCAzLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAyLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAxLCAyLCAxLCAxLCAxLCAxLCDigKZcbiQgbGVuZ3RoX3VybCAgICAgICAgICAgICAgICAgPGRibD4gMjUsIDIyMywgMTUsIDgxLCAxOSwgMjIsIDI3LCA0NiwgMTYsIDI0LCAxOSwgNTgsIDQ1LCAyMSwgMzMsIDIxMywgMTMsIDMwLCA1NywgMTcsIDIxLCAyMCwgODEsIDEzLCAxOCwgMjEs4oCmXG4kIHF0eV9kb3RfZG9tYWluICAgICAgICAgICAgIDxkYmw+IDIsIDIsIDIsIDIsIDIsIDEsIDIsIDIsIDIsIDEsIDIsIDEsIDEsIDIsIDMsIDIsIDIsIDMsIDEsIDMsIDQsIDIsIDIsIDIsIDIsIDMsIDIsIDIsIDIsIDMsIDIsIDIsIDIsIDIsIDIsIOKAplxuJCBxdHlfaHlwaGVuX2RvbWFpbiAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAxLCAwLCAxLCAwLCAwLCAwLCAxLCAwLCAwLCAwLCAwLCAxLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X3VuZGVybGluZV9kb21haW4gICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9zbGFzaF9kb21haW4gICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfcXVlc3Rpb25tYXJrX2RvbWFpbiAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X2VxdWFsX2RvbWFpbiAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9hdF9kb21haW4gICAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfYW5kX2RvbWFpbiAgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X2V4Y2xhbWF0aW9uX2RvbWFpbiAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9zcGFjZV9kb21haW4gICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfdGlsZGVfZG9tYWluICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X2NvbW1hX2RvbWFpbiAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9wbHVzX2RvbWFpbiAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfYXN0ZXJpc2tfZG9tYWluICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X2hhc2h0YWdfZG9tYWluICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9kb2xsYXJfZG9tYWluICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCBxdHlfcGVyY2VudF9kb21haW4gICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcXR5X3Zvd2Vsc19kb21haW4gICAgICAgICAgPGRibD4gNCwgNSwgMywgNywgNSwgNCwgOSwgOSwgMywgNCwgNSwgNiwgNSwgNSwgNywgNiwgMiwgNywgMywgNSwgNSwgNSwgMTQsIDMsIDQsIDUsIDQsIDcsIDcsIDcsIDIsIDMsIDcsIDYsIDMs4oCmXG4kIGRvbWFpbl9sZW5ndGggICAgICAgICAgICAgIDxkYmw+IDE3LCAxNiwgMTQsIDE5LCAxOSwgMTcsIDI3LCAyOCwgMTYsIDE0LCAxOSwgMTYsIDEzLCAyMSwgMjcsIDIwLCAxMywgMzAsIDExLCAxNywgMjEsIDE5LCA0NCwgMTMsIDE4LCAyMCwgMeKAplxuJCBkb21haW5faW5faXAgICAgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgc2VydmVyX2NsaWVudF9kb21haW4gICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHF0eV9kb3RfZGlyZWN0b3J5ICAgICAgICAgIDxkYmw+IDEsIDMsIDAsIDIsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAxLCAtMSwgMCwgMSwgLTEsIC0xLCAxLCAtMSwgLTEsIDAsIDIsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAyLOKAplxuJCBxdHlfaHlwaGVuX2RpcmVjdG9yeSAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAxLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMSzigKZcbiQgcXR5X3VuZGVybGluZV9kaXJlY3RvcnkgICAgPGRibD4gMCwgMCwgMCwgMiwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMywgLTEsIDAs4oCmXG4kIHF0eV9zbGFzaF9kaXJlY3RvcnkgICAgICAgIDxkYmw+IDEsIDMsIDEsIDUsIC0xLCAyLCAtMSwgMywgLTEsIDIsIC0xLCAzLCA0LCAtMSwgMiwgNSwgLTEsIC0xLCAyLCAtMSwgLTEsIDEsIDUsIC0xLCAtMSwgMSwgLTEsIDEsIDIsIC0xLCAzLOKAplxuJCBxdHlfcXVlc3Rpb25tYXJrX2RpcmVjdG9yeSA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2VxdWFsX2RpcmVjdG9yeSAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9hdF9kaXJlY3RvcnkgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfYW5kX2RpcmVjdG9yeSAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2V4Y2xhbWF0aW9uX2RpcmVjdG9yeSAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9zcGFjZV9kaXJlY3RvcnkgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfdGlsZGVfZGlyZWN0b3J5ICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2NvbW1hX2RpcmVjdG9yeSAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9wbHVzX2RpcmVjdG9yeSAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfYXN0ZXJpc2tfZGlyZWN0b3J5ICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2hhc2h0YWdfZGlyZWN0b3J5ICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9kb2xsYXJfZGlyZWN0b3J5ICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfcGVyY2VudF9kaXJlY3RvcnkgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgZGlyZWN0b3J5X2xlbmd0aCAgICAgICAgICAgPGRibD4gOCwgNDIsIDEsIDYyLCAtMSwgNSwgLTEsIDE4LCAtMSwgMTAsIC0xLCA0MiwgMzIsIC0xLCA2LCAyOCwgLTEsIC0xLCAyMCwgLTEsIC0xLCAxLCAzNywgLTEsIC0xLCAxLCAtMSwgMSwg4oCmXG4kIHF0eV9kb3RfZmlsZSAgICAgICAgICAgICAgIDxkYmw+IDEsIDEsIDAsIDEsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAxLCAtMSwgMCwgMSwgLTEsIC0xLCAxLCAtMSwgLTEsIDAsIDEsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAxLOKAplxuJCBxdHlfaHlwaGVuX2ZpbGUgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMSzigKZcbiQgcXR5X3VuZGVybGluZV9maWxlICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMywgLTEsIDAs4oCmXG4kIHF0eV9zbGFzaF9maWxlICAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfcXVlc3Rpb25tYXJrX2ZpbGUgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2VxdWFsX2ZpbGUgICAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9hdF9maWxlICAgICAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfYW5kX2ZpbGUgICAgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2V4Y2xhbWF0aW9uX2ZpbGUgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9zcGFjZV9maWxlICAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfdGlsZGVfZmlsZSAgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2NvbW1hX2ZpbGUgICAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9wbHVzX2ZpbGUgICAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfYXN0ZXJpc2tfZmlsZSAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgcXR5X2hhc2h0YWdfZmlsZSAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAs4oCmXG4kIHF0eV9kb2xsYXJfZmlsZSAgICAgICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIC0xLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIDAsIDAsIC0xLCAwLOKAplxuJCBxdHlfcGVyY2VudF9maWxlICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAtMSwgMCwgLTEsIDAsIC0xLCAwLCAtMSwgMCwgMCwgLTEsIDAsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAwLCAtMSwgLTEsIDAsIC0xLCAwLCAwLCAtMSwgMCzigKZcbiQgZmlsZV9sZW5ndGggICAgICAgICAgICAgICAgPGRibD4gNywgOSwgMCwgOSwgLTEsIDAsIC0xLCAyLCAtMSwgMCwgLTEsIDAsIDEwLCAtMSwgMCwgOCwgLTEsIC0xLCA3LCAtMSwgLTEsIDAsIDEyLCAtMSwgLTEsIDAsIC0xLCAwLCAyMywgLTEs4oCmXG4kIHF0eV9kb3RfcGFyYW1zICAgICAgICAgICAgIDxkYmw+IC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgMCwgLTEsIC0xLCAyLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIOKAplxuJCBxdHlfaHlwaGVuX3BhcmFtcyAgICAgICAgICA8ZGJsPiAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCDigKZcbiQgcXR5X3VuZGVybGluZV9wYXJhbXMgICAgICAgPGRibD4gLTEsIDEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAxLCAtMSwgLTEsIDAsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwg4oCmXG4kIHF0eV9zbGFzaF9wYXJhbXMgICAgICAgICAgIDxkYmw+IC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIOKAplxuJCBxdHlfcXVlc3Rpb25tYXJrX3BhcmFtcyAgICA8ZGJsPiAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCDigKZcbiQgcXR5X2VxdWFsX3BhcmFtcyAgICAgICAgICAgPGRibD4gLTEsIDMsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAzLCAtMSwgLTEsIDEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwg4oCmXG4kIHF0eV9hdF9wYXJhbXMgICAgICAgICAgICAgIDxkYmw+IC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgMCwgLTEsIC0xLCAxLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIOKAplxuJCBxdHlfYW5kX3BhcmFtcyAgICAgICAgICAgICA8ZGJsPiAtMSwgMiwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDIsIC0xLCAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCDigKZcbiQgcXR5X2V4Y2xhbWF0aW9uX3BhcmFtcyAgICAgPGRibD4gLTEsIDAsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwg4oCmXG4kIHF0eV9zcGFjZV9wYXJhbXMgICAgICAgICAgIDxkYmw+IC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIOKAplxuJCBxdHlfdGlsZGVfcGFyYW1zICAgICAgICAgICA8ZGJsPiAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCDigKZcbiQgcXR5X2NvbW1hX3BhcmFtcyAgICAgICAgICAgPGRibD4gLTEsIDAsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwg4oCmXG4kIHF0eV9wbHVzX3BhcmFtcyAgICAgICAgICAgIDxkYmw+IC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIOKAplxuJCBxdHlfYXN0ZXJpc2tfcGFyYW1zICAgICAgICA8ZGJsPiAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCDigKZcbiQgcXR5X2hhc2h0YWdfcGFyYW1zICAgICAgICAgPGRibD4gLTEsIDAsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAwLCAtMSwgLTEsIDAsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwg4oCmXG4kIHF0eV9kb2xsYXJfcGFyYW1zICAgICAgICAgIDxkYmw+IC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgMCwgLTEsIC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIOKAplxuJCBxdHlfcGVyY2VudF9wYXJhbXMgICAgICAgICA8ZGJsPiAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDAsIC0xLCAtMSwgMCwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCDigKZcbiQgcGFyYW1zX2xlbmd0aCAgICAgICAgICAgICAgPGRibD4gLTEsIDE2NSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDE2NSwgLTEsIC0xLCAyNiwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEs4oCmXG4kIHRsZF9wcmVzZW50X3BhcmFtcyAgICAgICAgIDxkYmw+IC0xLCAwLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgMCwgLTEsIC0xLCAxLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIOKAplxuJCBxdHlfcGFyYW1zICAgICAgICAgICAgICAgICA8ZGJsPiAtMSwgMywgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIDMsIC0xLCAtMSwgMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCAtMSwgLTEsIC0xLCDigKZcbiQgZW1haWxfaW5fdXJsICAgICAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMSwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIHRpbWVfcmVzcG9uc2UgICAgICAgICAgICAgIDxkYmw+IDAuMjA3MzE2LCAwLjQ5OTU2NiwgMC45MzU5MDEsIDAuNDEwMDIxLCAwLjQxMDc2MSwgMC40NTg0MzYsIDAuNzEwMTczLCAwLjI0NDUxMiwgMS43MTIxNjEsIDAuNzg3NTcwLCAxLjc5OeKAplxuJCBkb21haW5fc3BmICAgICAgICAgICAgICAgICA8ZGJsPiAwLCAtMSwgMCwgMCwgMCwgLTEsIDAsIDAsIDAsIDEsIDAsIDEsIC0xLCAtMSwgMCwgMSwgMCwgMCwgLTEsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDEsIDAsIDAsIDDigKZcbiQgYXNuX2lwICAgICAgICAgICAgICAgICAgICAgPGRibD4gNjA3ODEsIDM2MDI0LCA0NzY2LCAyMDQ1NCwgNTM4MzEsIDI1NTM1LCAxMzQ0NiwgNTUwNTMsIDEzMzM1LCAyMDAxMywgMzE4MTUsIDQ2NjA2LCAxOTg2MTAsIDEyNDg4LCAyNjQ5Niwg4oCmXG4kIHRpbWVfZG9tYWluX2FjdGl2YXRpb24gICAgIDxkYmw+IC0xLCA1NzksIC0xLCAtMSwgNjk5OCwgOSwgLTEsIC0xLCA3NzgsIDQ4MDUsIDYyNDEsIDkzNSwgMTA2NSwgNzM0OCwgLTEsIDMxNDQsIDY4ODksIC0xLCAyNzAsIC0xLCA4MTIwLCAtMeKAplxuJCB0aW1lX2RvbWFpbl9leHBpcmF0aW9uICAgICA8ZGJsPiAtMSwgMTUwLCAtMSwgLTEsIDMwNiwgMzU1LCAtMSwgLTEsIDMxNiwgMzA3LCAxMDYzLCAxNjAsIDMwLCAzMjAsIC0xLCAxNDIsIDc4MSwgLTEsIDk0LCAtMSwgLTEsIC0xLCAtMSwgLTHigKZcbiQgcXR5X2lwX3Jlc29sdmVkICAgICAgICAgICAgPGRibD4gMSwgMSwgMSwgMSwgMSwgMSwgMSwgMSwgMSwgMSwgMSwgMSwgMSwgMSwgLTEsIDEsIDEsIDEsIDEsIDEsIDEsIDEsIC0xLCAxLCAxLCAxLCAyLCAxLCAxLCAxLCAxLCAyLCAxLCAyLCAx4oCmXG4kIHF0eV9uYW1lc2VydmVycyAgICAgICAgICAgIDxkYmw+IDIsIDIsIDIsIDIsIDIsIDMsIDIsIDIsIDQsIDIsIDIsIDIsIDYsIDIsIDIsIDIsIDIsIDIsIDIsIDMsIDIsIDIsIDIsIDIsIDQsIDUsIDIsIDYsIDMsIDEsIDIsIDYsIDIsIDIsIDIsIOKAplxuJCBxdHlfbXhfc2VydmVycyAgICAgICAgICAgICA8ZGJsPiAwLCAxLCAzLCAwLCAxLCAzLCAyLCAxLCAyLCAxLCAxLCAxLCAyLCAxLCAyLCA1LCA1LCAxLCAxLCAxLCAxLCAwLCAyLCAxLCAxLCAxLCAxLCAyLCAyLCA1LCAxLCAyLCAxLCA4LCAxLCDigKZcbiQgdHRsX2hvc3RuYW1lICAgICAgICAgICAgICAgPGRibD4gODkyLCA5NTQwLCA1ODksIDI5MiwgMzU5NywgMzU5MSwgMjkxLCAzMTM0LCAzNTk2LCAxNDM5NywgNDMxOTcsIDEzMTc0LCA1ODMsIDE0Mzk2LCAtMSwgOTYzMiwgMjEwLCAyOTksIDE04oCmXG4kIHRsc19zc2xfY2VydGlmaWNhdGUgICAgICAgIDxkYmw+IDAsIDEsIDEsIDEsIDAsIDEsIDAsIDEsIDEsIDEsIDAsIDEsIDAsIDEsIDAsIDEsIDEsIDAsIDAsIDAsIDEsIDAsIDAsIDAsIDEsIDEsIDAsIDEsIDEsIDAsIDEsIDAsIDEsIDEsIDEsIOKAplxuJCBxdHlfcmVkaXJlY3RzICAgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAxLCAwLCAwLCAwLCAxLCAwLCAxLCAwLCAwLCAwLCAwLCAxLCAxLCAwLCAwLCAwLCAwLCAwLCAtMSwgMSwgMSwgMSwgMCwgMSwgMSwgMCwgMCwgMCwgMiwgMCwgMSzigKZcbiQgdXJsX2dvb2dsZV9pbmRleCAgICAgICAgICAgPGRibD4gMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMCwg4oCmXG4kIGRvbWFpbl9nb29nbGVfaW5kZXggICAgICAgIDxkYmw+IDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIDAsIOKAplxuJCB1cmxfc2hvcnRlbmVkICAgICAgICAgICAgICA8ZGJsPiAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCAwLCDigKZcbiQgcGhpc2hpbmcgICAgICAgICAgICAgICAgICAgPGRibD4gMSwgMSwgMCwgMSwgMCwgMSwgMCwgMCwgMCwgMSwgMCwgMSwgMSwgMCwgMSwgMSwgMCwgMCwgMSwgMCwgMCwgMSwgMSwgMCwgMCwgMCwgMCwgMCwgMCwgMCwgMSwgMCwgMCwgMCwgMCwg4oCmXG4ifQ== -->
+<pre><code>Rows: 88,647
+Columns: 112
+$ qty_dot_url                &lt;dbl&gt; 3, 5, 2, 4, 2, 1, 2, 2, 2, 1, 2, 1, 2, 2, 3, 3, 2, 3, 4, 3, 4, 2, 4, 2, 2, 3, 2, 2, 2, 3, 4, 2, 2, 2, 2, …
+$ qty_hyphen_url             &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0, …
+$ qty_underline_url          &lt;dbl&gt; 0, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, …
+$ qty_slash_url              &lt;dbl&gt; 1, 3, 1, 5, 0, 2, 0, 3, 0, 2, 0, 3, 4, 0, 2, 5, 0, 0, 2, 0, 0, 1, 5, 0, 0, 1, 0, 1, 2, 0, 3, 5, 0, 0, 0, …
+$ qty_questionmark_url       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_equal_url              &lt;dbl&gt; 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_at_url                 &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_and_url                &lt;dbl&gt; 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_exclamation_url        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_space_url              &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_tilde_url              &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_comma_url              &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_plus_url               &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_asterisk_url           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_hashtag_url            &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_dollar_url             &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_percent_url            &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_tld_url                &lt;dbl&gt; 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, …
+$ length_url                 &lt;dbl&gt; 25, 223, 15, 81, 19, 22, 27, 46, 16, 24, 19, 58, 45, 21, 33, 213, 13, 30, 57, 17, 21, 20, 81, 13, 18, 21,…
+$ qty_dot_domain             &lt;dbl&gt; 2, 2, 2, 2, 2, 1, 2, 2, 2, 1, 2, 1, 1, 2, 3, 2, 2, 3, 1, 3, 4, 2, 2, 2, 2, 3, 2, 2, 2, 3, 2, 2, 2, 2, 2, …
+$ qty_hyphen_domain          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_underline_domain       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_slash_domain           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_questionmark_domain    &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_equal_domain           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_at_domain              &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_and_domain             &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_exclamation_domain     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_space_domain           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_tilde_domain           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_comma_domain           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_plus_domain            &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_asterisk_domain        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_hashtag_domain         &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_dollar_domain          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_percent_domain         &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_vowels_domain          &lt;dbl&gt; 4, 5, 3, 7, 5, 4, 9, 9, 3, 4, 5, 6, 5, 5, 7, 6, 2, 7, 3, 5, 5, 5, 14, 3, 4, 5, 4, 7, 7, 7, 2, 3, 7, 6, 3,…
+$ domain_length              &lt;dbl&gt; 17, 16, 14, 19, 19, 17, 27, 28, 16, 14, 19, 16, 13, 21, 27, 20, 13, 30, 11, 17, 21, 19, 44, 13, 18, 20, 1…
+$ domain_in_ip               &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ server_client_domain       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ qty_dot_directory          &lt;dbl&gt; 1, 3, 0, 2, -1, 0, -1, 0, -1, 0, -1, 0, 1, -1, 0, 1, -1, -1, 1, -1, -1, 0, 2, -1, -1, 0, -1, 0, 0, -1, 2,…
+$ qty_hyphen_directory       &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 1, -1, 0, 0, -1, -1, 0, -1, -1, 0, 1, -1, -1, 0, -1, 0, 0, -1, 1,…
+$ qty_underline_directory    &lt;dbl&gt; 0, 0, 0, 2, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 3, -1, 0,…
+$ qty_slash_directory        &lt;dbl&gt; 1, 3, 1, 5, -1, 2, -1, 3, -1, 2, -1, 3, 4, -1, 2, 5, -1, -1, 2, -1, -1, 1, 5, -1, -1, 1, -1, 1, 2, -1, 3,…
+$ qty_questionmark_directory &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_equal_directory        &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_at_directory           &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_and_directory          &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_exclamation_directory  &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_space_directory        &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_tilde_directory        &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_comma_directory        &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_plus_directory         &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_asterisk_directory     &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_hashtag_directory      &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_dollar_directory       &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_percent_directory      &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ directory_length           &lt;dbl&gt; 8, 42, 1, 62, -1, 5, -1, 18, -1, 10, -1, 42, 32, -1, 6, 28, -1, -1, 20, -1, -1, 1, 37, -1, -1, 1, -1, 1, …
+$ qty_dot_file               &lt;dbl&gt; 1, 1, 0, 1, -1, 0, -1, 0, -1, 0, -1, 0, 1, -1, 0, 1, -1, -1, 1, -1, -1, 0, 1, -1, -1, 0, -1, 0, 0, -1, 1,…
+$ qty_hyphen_file            &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 1,…
+$ qty_underline_file         &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 3, -1, 0,…
+$ qty_slash_file             &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_questionmark_file      &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_equal_file             &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_at_file                &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_and_file               &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_exclamation_file       &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_space_file             &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_tilde_file             &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_comma_file             &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_plus_file              &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_asterisk_file          &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_hashtag_file           &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_dollar_file            &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ qty_percent_file           &lt;dbl&gt; 0, 0, 0, 0, -1, 0, -1, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0, 0, -1, -1, 0, -1, 0, 0, -1, 0,…
+$ file_length                &lt;dbl&gt; 7, 9, 0, 9, -1, 0, -1, 2, -1, 0, -1, 0, 10, -1, 0, 8, -1, -1, 7, -1, -1, 0, 12, -1, -1, 0, -1, 0, 23, -1,…
+$ qty_dot_params             &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_hyphen_params          &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_underline_params       &lt;dbl&gt; -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_slash_params           &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_questionmark_params    &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_equal_params           &lt;dbl&gt; -1, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_at_params              &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_and_params             &lt;dbl&gt; -1, 2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_exclamation_params     &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_space_params           &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_tilde_params           &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_comma_params           &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_plus_params            &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_asterisk_params        &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_hashtag_params         &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_dollar_params          &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_percent_params         &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ params_length              &lt;dbl&gt; -1, 165, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 165, -1, -1, 26, -1, -1, -1, -1, -1, -1, -1,…
+$ tld_present_params         &lt;dbl&gt; -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ qty_params                 &lt;dbl&gt; -1, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, …
+$ email_in_url               &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ time_response              &lt;dbl&gt; 0.207316, 0.499566, 0.935901, 0.410021, 0.410761, 0.458436, 0.710173, 0.244512, 1.712161, 0.787570, 1.799…
+$ domain_spf                 &lt;dbl&gt; 0, -1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 1, -1, -1, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0…
+$ asn_ip                     &lt;dbl&gt; 60781, 36024, 4766, 20454, 53831, 25535, 13446, 55053, 13335, 20013, 31815, 46606, 198610, 12488, 26496, …
+$ time_domain_activation     &lt;dbl&gt; -1, 579, -1, -1, 6998, 9, -1, -1, 778, 4805, 6241, 935, 1065, 7348, -1, 3144, 6889, -1, 270, -1, 8120, -1…
+$ time_domain_expiration     &lt;dbl&gt; -1, 150, -1, -1, 306, 355, -1, -1, 316, 307, 1063, 160, 30, 320, -1, 142, 781, -1, 94, -1, -1, -1, -1, -1…
+$ qty_ip_resolved            &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1…
+$ qty_nameservers            &lt;dbl&gt; 2, 2, 2, 2, 2, 3, 2, 2, 4, 2, 2, 2, 6, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 4, 5, 2, 6, 3, 1, 2, 6, 2, 2, 2, …
+$ qty_mx_servers             &lt;dbl&gt; 0, 1, 3, 0, 1, 3, 2, 1, 2, 1, 1, 1, 2, 1, 2, 5, 5, 1, 1, 1, 1, 0, 2, 1, 1, 1, 1, 2, 2, 5, 1, 2, 1, 8, 1, …
+$ ttl_hostname               &lt;dbl&gt; 892, 9540, 589, 292, 3597, 3591, 291, 3134, 3596, 14397, 43197, 13174, 583, 14396, -1, 9632, 210, 299, 14…
+$ tls_ssl_certificate        &lt;dbl&gt; 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, …
+$ qty_redirects              &lt;dbl&gt; 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, -1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 2, 0, 1,…
+$ url_google_index           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ domain_google_index        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ url_shortened              &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ phishing                   &lt;dbl&gt; 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, …</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Pasando todas las variables a factor podemos ver de manera rápida las frecuencias de los valores únicos.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSAlPiVcbiAgbXV0YXRlX2FsbChhcy5mYWN0b3IpICU+JVxuICBzdW1tYXJ5KClcbmBgYCJ9 -->
+<pre class="r"><code>data %&gt;%
+  mutate_all(as.factor) %&gt;%
+  summary()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICBxdHlfZG90X3VybCAgICBxdHlfaHlwaGVuX3VybCAgcXR5X3VuZGVybGluZV91cmwgcXR5X3NsYXNoX3VybCAgIHF0eV9xdWVzdGlvbm1hcmtfdXJsIHF0eV9lcXVhbF91cmwgICAgIHF0eV9hdF91cmwgICAgIHF0eV9hbmRfdXJsICAgXG4gMiAgICAgIDo1MzY0OSAgIDAgICAgICA6NzMwNjYgICAwICAgICAgOjgzMzE4ICAgICAwICAgICAgOjQ3NTA5ICAgMDo4Nzg5OCAgICAgICAgICAgICAgMCAgICAgIDo4MTMzOSAgIDAgICAgICA6ODY5MzcgICAwICAgICAgOjg0ODQ5ICBcbiAxICAgICAgOjE1ODg1ICAgMSAgICAgIDoxMDU3MyAgIDEgICAgICA6IDMzMDYgICAgIDEgICAgICA6MTM1MjIgICAxOiAgNjkzICAgICAgICAgICAgICAxICAgICAgOiAzNTE0ICAgMSAgICAgIDogMTY2MSAgIDIgICAgICA6IDEzMTUgIFxuIDMgICAgICA6MTMyMDUgICAyICAgICAgOiAyNDM2ICAgMiAgICAgIDogMTA0MCAgICAgMyAgICAgIDogODM1OCAgIDI6ICAgNTAgICAgICAgICAgICAgIDMgICAgICA6IDEzMjkgICAyICAgICAgOiAgIDIwICAgMSAgICAgIDogMTE3NSAgXG4gNCAgICAgIDogMzU5MyAgIDMgICAgICA6ICA5MDEgICAzICAgICAgOiAgNDc1ICAgICAyICAgICAgOiA4MDcyICAgMzogICAgMyAgICAgICAgICAgICAgMiAgICAgIDogMTI0MSAgIDQgICAgICA6ICAgIDcgICAzICAgICAgOiAgMjU5ICBcbiA1ICAgICAgOiAxMDA4ICAgNCAgICAgIDogIDUxMiAgIDQgICAgICA6ICAyMDYgICAgIDQgICAgICA6IDQ2NzYgICA3OiAgICAxICAgICAgICAgICAgICA2ICAgICAgOiAgMzA1ICAgMyAgICAgIDogICAgNiAgIDUgICAgICA6ICAyNTIgIFxuIDYgICAgICA6ICA0NTQgICA1ICAgICAgOiAgMzUyICAgNSAgICAgIDogICA5NSAgICAgNSAgICAgIDogMjk5OSAgIDk6ICAgIDIgICAgICAgICAgICAgIDQgICAgICA6ICAyNjkgICA1ICAgICAgOiAgICAzICAgMTAgICAgIDogIDE3NyAgXG4gKE90aGVyKTogIDg1MyAgIChPdGhlcik6ICA4MDcgICAoT3RoZXIpOiAgMjA3ICAgICAoT3RoZXIpOiAzNTExICAgICAgICAgICAgICAgICAgICAgICAgKE90aGVyKTogIDY1MCAgIChPdGhlcik6ICAgMTMgICAoT3RoZXIpOiAgNjIwICBcbiBxdHlfZXhjbGFtYXRpb25fdXJsIHF0eV9zcGFjZV91cmwgICBxdHlfdGlsZGVfdXJsIHF0eV9jb21tYV91cmwgICAgcXR5X3BsdXNfdXJsICAgcXR5X2FzdGVyaXNrX3VybCBxdHlfaGFzaHRhZ191cmwgcXR5X2RvbGxhcl91cmwgXG4gMCAgICAgIDo4ODQ1NCAgICAgICAwICAgICAgOjg4NjEzICAgMDo4ODQzMCAgICAgICAwICAgICAgOjg4NTIzICAgMCAgICAgIDo4ODUxOCAgIDAgICAgICA6ODg1ODggICAgMCA6ODg2MzYgICAgICAgIDAgICAgICA6ODg1OTMgIFxuIDEgICAgICA6ICAxNjcgICAgICAgMSAgICAgIDogICAyMCAgIDE6ICAxODcgICAgICAgMSAgICAgIDogICA5NyAgIDEgICAgICA6ICAgODkgICAxICAgICAgOiAgIDE4ICAgIDEgOiAgICAzICAgICAgICAxICAgICAgOiAgIDIyICBcbiAyICAgICAgOiAgIDE2ICAgICAgIDIgICAgICA6ICAgIDMgICAyOiAgICA1ICAgICAgIDMgICAgICA6ICAgMjAgICAyICAgICAgOiAgIDE3ICAgMiAgICAgIDogICAxMSAgICAyIDogICAgMiAgICAgICAgMyAgICAgIDogICAxMiAgXG4gMyAgICAgIDogICAgMiAgICAgICAzICAgICAgOiAgICAzICAgMzogICAxNyAgICAgICAyICAgICAgOiAgICAyICAgMyAgICAgIDogICAgNyAgIDQgICAgICA6ICAgIDYgICAgMyA6ICAgIDMgICAgICAgIDQgICAgICA6ICAgIDUgIFxuIDUgICAgICA6ICAgIDIgICAgICAgOSAgICAgIDogICAgMyAgIDQ6ICAgIDIgICAgICAgNCAgICAgIDogICAgMiAgIDQgICAgICA6ICAgIDUgICAzICAgICAgOiAgICAzICAgIDcgOiAgICAxICAgICAgICAyICAgICAgOiAgICA0ICBcbiA5ICAgICAgOiAgICAyICAgICAgIDQgICAgICA6ICAgIDIgICA1OiAgICA2ICAgICAgIDUgICAgICA6ICAgIDEgICA2ICAgICAgOiAgICA0ICAgOSAgICAgIDogICAgMyAgICA5IDogICAgMSAgICAgICAgNSAgICAgIDogICAgMyAgXG4gKE90aGVyKTogICAgNCAgICAgICAoT3RoZXIpOiAgICAzICAgICAgICAgICAgICAgICAoT3RoZXIpOiAgICAyICAgKE90aGVyKTogICAgNyAgIChPdGhlcik6ICAgMTggICAgMTM6ICAgIDEgICAgICAgIChPdGhlcik6ICAgIDggIFxuIHF0eV9wZXJjZW50X3VybCAgcXR5X3RsZF91cmwgICAgICBsZW5ndGhfdXJsICAgIHF0eV9kb3RfZG9tYWluICBxdHlfaHlwaGVuX2RvbWFpbiBxdHlfdW5kZXJsaW5lX2RvbWFpbiBxdHlfc2xhc2hfZG9tYWluXG4gMCAgICAgIDo4NzExMSAgIDEgICAgICA6ODQ0NzEgICAxOCAgICAgOiA0NjA3ICAgMiAgICAgIDo1NTc0MyAgIDAgICAgICA6ODA1NzAgICAgIDA6ODg1OTIgICAgICAgICAgICAgIDA6ODg2NDcgICAgICAgICBcbiAxICAgICAgOiAgNjEzICAgMiAgICAgIDogMzUzNSAgIDE5ICAgICA6IDQ1NDQgICAxICAgICAgOjIzMjY5ICAgMSAgICAgIDogNjcxMyAgICAgMTogICA0NCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIDIgICAgICA6ICAyNDQgICAzICAgICAgOiAgMzUyICAgMTcgICAgIDogNDQxMiAgIDMgICAgICA6IDc2NjQgICAyICAgICAgOiAgOTY2ICAgICAyOiAgIDEwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gMyAgICAgIDogICA4NiAgIDAgICAgICA6ICAyMzAgICAyMCAgICAgOiA0MzgyICAgNCAgICAgIDogMTYyNiAgIDMgICAgICA6ICAyMTggICAgIDM6ICAgIDEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiA0ICAgICAgOiAgIDgzICAgNCAgICAgIDogICA1MSAgIDE2ICAgICA6IDQyMDYgICAwICAgICAgOiAgMTI0ICAgNCAgICAgIDogIDEwNyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIDUgICAgICA6ICAgODIgICA1ICAgICAgOiAgICA0ICAgMjEgICAgIDogMzgyOSAgIDUgICAgICA6ICAxMDAgICA1ICAgICAgOiAgIDQwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gKE90aGVyKTogIDQyOCAgIChPdGhlcik6ICAgIDQgICAoT3RoZXIpOjYyNjY3ICAgKE90aGVyKTogIDEyMSAgIChPdGhlcik6ICAgMzMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiBxdHlfcXVlc3Rpb25tYXJrX2RvbWFpbiBxdHlfZXF1YWxfZG9tYWluIHF0eV9hdF9kb21haW4gcXR5X2FuZF9kb21haW4gcXR5X2V4Y2xhbWF0aW9uX2RvbWFpbiBxdHlfc3BhY2VfZG9tYWluIHF0eV90aWxkZV9kb21haW5cbiAwOjg4NjQ3ICAgICAgICAgICAgICAgICAwOjg4NjQ3ICAgICAgICAgIDA6ODg2NDYgICAgICAgMDo4ODY0NyAgICAgICAgMDo4ODY0NyAgICAgICAgICAgICAgICAwOjg4NjQ3ICAgICAgICAgIDA6ODg2NDcgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDE6ICAgIDEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiBxdHlfY29tbWFfZG9tYWluIHF0eV9wbHVzX2RvbWFpbiBxdHlfYXN0ZXJpc2tfZG9tYWluIHF0eV9oYXNodGFnX2RvbWFpbiBxdHlfZG9sbGFyX2RvbWFpbiBxdHlfcGVyY2VudF9kb21haW4gcXR5X3Zvd2Vsc19kb21haW5cbiAwOjg4NjQ3ICAgICAgICAgIDA6ODg2NDcgICAgICAgICAwOjg4NjQ3ICAgICAgICAgICAgIDA6ODg2NDcgICAgICAgICAgICAwOjg4NjQ3ICAgICAgICAgICAwOjg4NjQ3ICAgICAgICAgICAgNSAgICAgIDoxNjMzMSAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgNiAgICAgIDoxNDYzMiAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgNCAgICAgIDoxNDYyOCAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMyAgICAgIDogOTg3MiAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgNyAgICAgIDogOTU4OCAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgOCAgICAgIDogNjMyMiAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKE90aGVyKToxNzI3NCAgICBcbiBkb21haW5fbGVuZ3RoICAgZG9tYWluX2luX2lwIHNlcnZlcl9jbGllbnRfZG9tYWluIHF0eV9kb3RfZGlyZWN0b3J5IHF0eV9oeXBoZW5fZGlyZWN0b3J5IHF0eV91bmRlcmxpbmVfZGlyZWN0b3J5IHF0eV9zbGFzaF9kaXJlY3RvcnlcbiAxNiAgICAgOiA4MjE4ICAgMDo4ODQ0NiAgICAgIDA6ODgyNDggICAgICAgICAgICAgIC0xICAgICA6NDc1MDkgICAgIC0xICAgICA6NDc1MDkgICAgICAgIC0xICAgICA6NDc1MDkgICAgICAgICAgIC0xICAgICA6NDc1MDkgICAgICBcbiAxOCAgICAgOiA2MjE0ICAgMTogIDIwMSAgICAgIDE6ICAzOTkgICAgICAgICAgICAgIDAgICAgICA6MjU4OTQgICAgIDAgICAgICA6MzM2NjYgICAgICAgIDAgICAgICA6Mzc4NjggICAgICAgICAgIDEgICAgICA6MTM4NTggICAgICBcbiAxNyAgICAgOiA2MTk1ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDEgICAgICA6MTMzMDcgICAgIDEgICAgICA6IDQ5NDYgICAgICAgIDEgICAgICA6IDIyODQgICAgICAgICAgIDMgICAgICA6IDgzODggICAgICBcbiAxOSAgICAgOiA2MDAzICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDIgICAgICA6IDExNDIgICAgIDIgICAgICA6IDEwMzEgICAgICAgIDIgICAgICA6ICA2MTUgICAgICAgICAgIDIgICAgICA6IDgxNTMgICAgICBcbiAxNSAgICAgOiA1OTA0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDMgICAgICA6ICA0MTQgICAgIDMgICAgICA6ICA0MjggICAgICAgIDMgICAgICA6ICAxOTYgICAgICAgICAgIDQgICAgICA6IDQ2MzEgICAgICBcbiAyMCAgICAgOiA1NTk2ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDQgICAgICA6ICAxOTQgICAgIDQgICAgICA6ICAyNTggICAgICAgIDQgICAgICA6ICAgNzcgICAgICAgICAgIDUgICAgICA6IDI5NjcgICAgICBcbiAoT3RoZXIpOjUwNTE3ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIChPdGhlcik6ICAxODcgICAgIChPdGhlcik6ICA4MDkgICAgICAgIChPdGhlcik6ICAgOTggICAgICAgICAgIChPdGhlcik6IDMxNDEgICAgICBcbiBxdHlfcXVlc3Rpb25tYXJrX2RpcmVjdG9yeSBxdHlfZXF1YWxfZGlyZWN0b3J5IHF0eV9hdF9kaXJlY3RvcnkgcXR5X2FuZF9kaXJlY3RvcnkgcXR5X2V4Y2xhbWF0aW9uX2RpcmVjdG9yeSBxdHlfc3BhY2VfZGlyZWN0b3J5XG4gLTE6NDc1MDkgICAgICAgICAgICAgICAgICAgLTE6NDc1MDkgICAgICAgICAgICAtMSAgICAgOjQ3NTA5ICAgIC0xICAgICA6NDc1MDkgICAgIC0xICAgICA6NDc1MDkgICAgICAgICAgICAgLTEgICAgIDo0NzUwOSAgICAgIFxuIDAgOjQxMTM4ICAgICAgICAgICAgICAgICAgIDAgOjQwNTk1ICAgICAgICAgICAgMCAgICAgIDo0MTAxMCAgICAwICAgICAgOjQwOTIxICAgICAwICAgICAgOjQxMDI4ICAgICAgICAgICAgIDAgICAgICA6NDExMTQgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAxIDogIDQ0NiAgICAgICAgICAgIDEgICAgICA6ICAxMDIgICAgMSAgICAgIDogIDE4OSAgICAgMSAgICAgIDogICA5NiAgICAgICAgICAgICAxICAgICAgOiAgIDEzICAgICAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgMiA6ICAgNzMgICAgICAgICAgICAyICAgICAgOiAgICA3ICAgIDIgICAgICA6ICAgIDcgICAgIDIgICAgICA6ICAgIDggICAgICAgICAgICAgMyAgICAgIDogICAgMyAgICAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgIDMgOiAgIDE3ICAgICAgICAgICAgMyAgICAgIDogICAgNiAgICAzICAgICAgOiAgICA1ICAgICA1ICAgICAgOiAgICAyICAgICAgICAgICAgIDkgICAgICA6ICAgIDMgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICA0IDogICAgNSAgICAgICAgICAgIDQgICAgICA6ICAgIDQgICAgNCAgICAgIDogICAgMyAgICAgMyAgICAgIDogICAgMSAgICAgICAgICAgICAyICAgICAgOiAgICAyICAgICAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgNSA6ICAgIDIgICAgICAgICAgICAoT3RoZXIpOiAgICA5ICAgIChPdGhlcik6ICAgMTMgICAgIChPdGhlcik6ICAgIDMgICAgICAgICAgICAgKE90aGVyKTogICAgMyAgICAgIFxuIHF0eV90aWxkZV9kaXJlY3RvcnkgcXR5X2NvbW1hX2RpcmVjdG9yeSBxdHlfcGx1c19kaXJlY3RvcnkgcXR5X2FzdGVyaXNrX2RpcmVjdG9yeSBxdHlfaGFzaHRhZ19kaXJlY3RvcnkgcXR5X2RvbGxhcl9kaXJlY3RvcnlcbiAtMTo0NzUwOSAgICAgICAgICAgIC0xOjQ3NTA5ICAgICAgICAgICAgLTEgICAgIDo0NzUwOSAgICAgIC0xICAgICA6NDc1MDkgICAgICAgICAgLTE6NDc1MDkgICAgICAgICAgICAgIC0xICAgICA6NDc1MDkgICAgICAgXG4gMCA6NDA5MjYgICAgICAgICAgICAwIDo0MTEwMyAgICAgICAgICAgIDAgICAgICA6NDExMDUgICAgICAwICAgICAgOjQxMDkxICAgICAgICAgIDAgOjQxMTM4ICAgICAgICAgICAgICAwICAgICAgOjQxMTA5ICAgICAgIFxuIDEgOiAgMTgyICAgICAgICAgICAgMSA6ICAgMjIgICAgICAgICAgICAxICAgICAgOiAgIDE4ICAgICAgMSAgICAgIDogICAxNiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMSAgICAgIDogICAxMCAgICAgICBcbiAyIDogICAgNSAgICAgICAgICAgIDMgOiAgIDEyICAgICAgICAgICAgMiAgICAgIDogICAgNCAgICAgIDIgICAgICA6ICAgMTEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDIgICAgICA6ICAgIDMgICAgICAgXG4gMyA6ICAgMTcgICAgICAgICAgICA1IDogICAgMSAgICAgICAgICAgIDMgICAgICA6ICAgIDQgICAgICA0ICAgICAgOiAgICA0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA0ICAgICAgOiAgICAzICAgICAgIFxuIDQgOiAgICAyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA0ICAgICAgOiAgICAyICAgICAgMTQgICAgIDogICAgMyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgNSAgICAgIDogICAgMyAgICAgICBcbiA1IDogICAgNiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKE90aGVyKTogICAgNSAgICAgIChPdGhlcik6ICAgMTMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIChPdGhlcik6ICAgMTAgICAgICAgXG4gcXR5X3BlcmNlbnRfZGlyZWN0b3J5IGRpcmVjdG9yeV9sZW5ndGggIHF0eV9kb3RfZmlsZSAgIHF0eV9oeXBoZW5fZmlsZSBxdHlfdW5kZXJsaW5lX2ZpbGUgcXR5X3NsYXNoX2ZpbGUgcXR5X3F1ZXN0aW9ubWFya19maWxlXG4gLTEgICAgIDo0NzUwOSAgICAgICAgIC0xICAgICA6NDc1MDkgICAgLTEgICAgIDo0NzUwOSAgIC0xICAgICA6NDc1MDkgICAtMSAgICAgOjQ3NTA5ICAgICAgLTE6NDc1MDkgICAgICAgLTE6NDc1MDkgICAgICAgICAgICAgXG4gMCAgICAgIDo0MDI4MCAgICAgICAgIDEgICAgICA6IDg3NjcgICAgMCAgICAgIDoyNjk0OCAgIDAgICAgICA6MzkzODQgICAwICAgICAgOjM5OTA4ICAgICAgMCA6NDExMzggICAgICAgMCA6NDExMzggICAgICAgICAgICAgXG4gMSAgICAgIDogIDQ3OCAgICAgICAgIDcgICAgICA6ICA5OTAgICAgMSAgICAgIDoxMzczOSAgIDEgICAgICA6ICA4NjAgICAxICAgICAgOiAgNzU4ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gMiAgICAgIDogIDEwNyAgICAgICAgIDE4ICAgICA6ICA5NTggICAgMiAgICAgIDogIDMwOSAgIDIgICAgICA6ICAyNDEgICAyICAgICAgOiAgMjk4ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gMyAgICAgIDogICA1OCAgICAgICAgIDYgICAgICA6ICA5NDEgICAgMyAgICAgIDogIDEyMSAgIDMgICAgICA6ICAxNDcgICAzICAgICAgOiAgIDgwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gNSAgICAgIDogICA0MCAgICAgICAgIDggICAgICA6ICA5MTIgICAgNCAgICAgIDogICAxNSAgIDQgICAgICA6ICAxMjkgICA0ICAgICAgOiAgIDMwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gKE90aGVyKTogIDE3NSAgICAgICAgIChPdGhlcik6Mjg1NzAgICAgKE90aGVyKTogICAgNiAgIChPdGhlcik6ICAzNzcgICAoT3RoZXIpOiAgIDY0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gcXR5X2VxdWFsX2ZpbGUgcXR5X2F0X2ZpbGUgcXR5X2FuZF9maWxlIHF0eV9leGNsYW1hdGlvbl9maWxlIHF0eV9zcGFjZV9maWxlICBxdHlfdGlsZGVfZmlsZSBxdHlfY29tbWFfZmlsZSBxdHlfcGx1c19maWxlICAgcXR5X2FzdGVyaXNrX2ZpbGVcbiAtMTo0NzUwOSAgICAgICAtMTo0NzUwOSAgICAtMTo0NzUwOSAgICAgLTE6NDc1MDkgICAgICAgICAgICAgLTEgICAgIDo0NzUwOSAgIC0xOjQ3NTA5ICAgICAgIC0xOjQ3NTA5ICAgICAgIC0xICAgICA6NDc1MDkgICAtMTo0NzUwOSAgICAgICAgIFxuIDAgOjQxMDI2ICAgICAgIDAgOjQxMTEzICAgIDAgOjQxMDE2ICAgICAwIDo0MTA1MCAgICAgICAgICAgICAwICAgICAgOjQxMTI1ICAgMCA6NDExMjMgICAgICAgMCA6NDExMTUgICAgICAgMCAgICAgIDo0MTExNiAgIDAgOjQxMTI2ICAgICAgICAgXG4gMSA6ICAgODIgICAgICAgMSA6ICAgMjQgICAgMSA6ICAxMTkgICAgIDEgOiAgIDg2ICAgICAgICAgICAgIDEgICAgICA6ICAgIDcgICAxIDogICAgNyAgICAgICAxIDogICAxMCAgICAgICAxICAgICAgOiAgIDEyICAgMSA6ICAgIDggICAgICAgICBcbiAyIDogICAyNiAgICAgICAyIDogICAgMSAgICAyIDogICAgMiAgICAgMiA6ICAgIDEgICAgICAgICAgICAgMiAgICAgIDogICAgMSAgIDIgOiAgICA2ICAgICAgIDIgOiAgICAxICAgICAgIDMgICAgICA6ICAgIDMgICAyIDogICAgMSAgICAgICAgIFxuIDMgOiAgICA0ICAgICAgICAgICAgICAgICAgIDMgOiAgICAxICAgICA0IDogICAgMSAgICAgICAgICAgICAzICAgICAgOiAgICAxICAgMyA6ICAgIDEgICAgICAgMyA6ICAgMTEgICAgICAgMiAgICAgIDogICAgMiAgIDE0OiAgICAxICAgICAgICAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDQgICAgICA6ICAgIDEgICA0IDogICAgMSAgICAgICA1IDogICAgMSAgICAgICA0ICAgICAgOiAgICAxICAgMjA6ICAgIDEgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKE90aGVyKTogICAgMyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIChPdGhlcik6ICAgIDQgICA2MDogICAgMSAgICAgICAgIFxuIHF0eV9oYXNodGFnX2ZpbGUgcXR5X2RvbGxhcl9maWxlIHF0eV9wZXJjZW50X2ZpbGUgIGZpbGVfbGVuZ3RoICAgIHF0eV9kb3RfcGFyYW1zICBxdHlfaHlwaGVuX3BhcmFtcyBxdHlfdW5kZXJsaW5lX3BhcmFtcyBxdHlfc2xhc2hfcGFyYW1zXG4gLTE6NDc1MDkgICAgICAgICAtMTo0NzUwOSAgICAgICAgLTEgICAgIDo0NzUwOSAgICAtMSAgICAgOjQ3NTA5ICAgLTEgICAgIDo4MTIyNSAgIC0xICAgICA6ODEyMjUgICAgIC0xICAgICA6ODEyMjUgICAgICAgIC0xICAgICA6ODEyMjUgICBcbiAwIDo0MTEzOCAgICAgICAgIDAgOjQxMTM4ICAgICAgICAwICAgICAgOjQwODAwICAgIDAgICAgICA6MTk2MjQgICAwICAgICAgOiA0MjAzICAgMCAgICAgIDogNjA1NCAgICAgMCAgICAgIDogNTE4MiAgICAgICAgMCAgICAgIDogNjY4OSAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDEgICAgICA6ICAxMDggICAgOSAgICAgIDogNDc5NyAgIDEgICAgICA6IDE1NDAgICAxICAgICAgOiAgODE1ICAgICAxICAgICAgOiAxMzQ5ICAgICAgICAxICAgICAgOiAgMjU3ICAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMiAgICAgIDogICA1OSAgICAxMCAgICAgOiAyMTI1ICAgMiAgICAgIDogIDgyOSAgIDIgICAgICA6ICAxNzQgICAgIDIgICAgICA6ICAzMTkgICAgICAgIDMgICAgICA6ICAxMzAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA1ICAgICAgOiAgIDMyICAgIDYgICAgICA6IDEzMjQgICA0ICAgICAgOiAgMjAxICAgNCAgICAgIDogIDE2OSAgICAgMyAgICAgIDogIDI1OCAgICAgICAgNCAgICAgIDogICA3OCAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDMgICAgICA6ICAgMjUgICAgOCAgICAgIDogMTIxMyAgIDMgICAgICA6ICAxNzkgICAzICAgICAgOiAgIDg3ICAgICA0ICAgICAgOiAgMTQ1ICAgICAgICAyICAgICAgOiAgIDcxICAgXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgKE90aGVyKTogIDExNCAgICAoT3RoZXIpOjEyMDU1ICAgKE90aGVyKTogIDQ3MCAgIChPdGhlcik6ICAxMjMgICAgIChPdGhlcik6ICAxNjkgICAgICAgIChPdGhlcik6ICAxOTcgICBcbiBxdHlfcXVlc3Rpb25tYXJrX3BhcmFtcyBxdHlfZXF1YWxfcGFyYW1zIHF0eV9hdF9wYXJhbXMgcXR5X2FuZF9wYXJhbXMgIHF0eV9leGNsYW1hdGlvbl9wYXJhbXMgcXR5X3NwYWNlX3BhcmFtcyBxdHlfdGlsZGVfcGFyYW1zXG4gLTE6ODEyMjUgICAgICAgICAgICAgICAgLTEgICAgIDo4MTIyNSAgICAtMTo4MTIyNSAgICAgIC0xICAgICA6ODEyMjUgICAtMTo4MTIyNSAgICAgICAgICAgICAgIC0xOjgxMjI1ICAgICAgICAgLTE6ODEyMjUgICAgICAgIFxuIDAgOiA2NzIyICAgICAgICAgICAgICAgIDEgICAgICA6IDMxNzEgICAgMCA6IDU4NDkgICAgICAwICAgICAgOiAzODU0ICAgMCA6IDczOTcgICAgICAgICAgICAgICAwIDogNzQxOCAgICAgICAgIDAgOiA3NDE3ICAgICAgICBcbiAxIDogIDY3MyAgICAgICAgICAgICAgICAzICAgICAgOiAxMjk5ICAgIDEgOiAxNTYyICAgICAgMiAgICAgIDogMTI5OCAgIDEgOiAgIDIwICAgICAgICAgICAgICAgMSA6ICAgIDMgICAgICAgICAxIDogICAgNSAgICAgICAgXG4gMiA6ICAgMjEgICAgICAgICAgICAgICAgMiAgICAgIDogMTE4NCAgICAyIDogICAgOSAgICAgIDEgICAgICA6IDEwODMgICAyIDogICAgMyAgICAgICAgICAgICAgIDQgOiAgICAxICAgICAgICAgICAgICAgICAgICAgICAgIFxuIDMgOiAgICAzICAgICAgICAgICAgICAgIDAgICAgICA6ICA2NjUgICAgOCA6ICAgIDEgICAgICAzICAgICAgOiAgMjQ5ICAgOCA6ICAgIDEgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiA3IDogICAgMSAgICAgICAgICAgICAgICA2ICAgICAgOiAgMzMwICAgIDEwOiAgICAxICAgICAgMTAgICAgIDogIDIxMSAgIDEwOiAgICAxICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gOSA6ICAgIDIgICAgICAgICAgICAgICAgKE90aGVyKTogIDc3MyAgICAgICAgICAgICAgICAgIChPdGhlcik6ICA3MjcgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIHF0eV9jb21tYV9wYXJhbXMgcXR5X3BsdXNfcGFyYW1zIHF0eV9hc3Rlcmlza19wYXJhbXMgcXR5X2hhc2h0YWdfcGFyYW1zIHF0eV9kb2xsYXJfcGFyYW1zIHF0eV9wZXJjZW50X3BhcmFtcyBwYXJhbXNfbGVuZ3RoICBcbiAtMSAgICAgOjgxMjI1ICAgIC0xICAgICA6ODEyMjUgICAtMTo4MTIyNSAgICAgICAgICAgIC0xOjgxMjI1ICAgICAgICAgICAtMTo4MTIyNSAgICAgICAgICAtMSAgICAgOjgxMjI1ICAgICAgLTEgICAgIDo4MTIyNSAgXG4gMCAgICAgIDogNzMzMyAgICAwICAgICAgOiA3MzI5ICAgMCA6IDc0MTcgICAgICAgICAgICAwIDogNzQyMiAgICAgICAgICAgMCA6IDc0MDcgICAgICAgICAgMCAgICAgIDogNjc0NyAgICAgIDE2NSAgICA6ICA1MjcgIFxuIDEgICAgICA6ICAgNzUgICAgMSAgICAgIDogICA2OSAgIDEgOiAgICA0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDEgOiAgICA2ICAgICAgICAgIDEgICAgICA6ICAxNDQgICAgICAyMyAgICAgOiAgMjEyICBcbiAzICAgICAgOiAgICA4ICAgIDIgICAgICA6ICAgMTMgICA0IDogICAgMSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAzIDogICAgOCAgICAgICAgICAyICAgICAgOiAgMTQwICAgICAgMjcgICAgIDogIDE3NSAgXG4gMiAgICAgIDogICAgMiAgICA2ICAgICAgOiAgICA0ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgNCA6ICAgIDEgICAgICAgICAgNCAgICAgIDogICA1OSAgICAgIDE2ICAgICA6ICAxNjQgIFxuIDQgICAgICA6ICAgIDIgICAgMyAgICAgIDogICAgMyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDUgICAgICA6ICAgNDMgICAgICA0MiAgICAgOiAgMTYzICBcbiAoT3RoZXIpOiAgICAyICAgIChPdGhlcik6ICAgIDQgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAoT3RoZXIpOiAgMjg5ICAgICAgKE90aGVyKTogNjE4MSAgXG4gdGxkX3ByZXNlbnRfcGFyYW1zICAgcXR5X3BhcmFtcyAgICBlbWFpbF9pbl91cmwgIHRpbWVfcmVzcG9uc2UgICBkb21haW5fc3BmICAgICBhc25faXAgICAgICB0aW1lX2RvbWFpbl9hY3RpdmF0aW9uIHRpbWVfZG9tYWluX2V4cGlyYXRpb25cbiAtMTo4MTIyNSAgICAgICAgICAgLTEgICAgIDo4MTIyNSAgIDA6ODcwMjIgICAgICAtMSAgICAgIDogNTg2MCAgIC0xOjE0Njc3ICAgLTEgICAgIDogNjQ3MyAgIC0xICAgICA6MjQzNTQgICAgICAgICAgLTEgICAgIDoyNjIxMCAgICAgICAgIFxuIDAgOiA1MjQ3ICAgICAgICAgICAxICAgICAgOiAzMzAxICAgMTogMTYyNSAgICAgIDAuMTgxMTI4OiAgICA0ICAgMCA6NjA4ODIgICAxMzMzNSAgOiA2MTU3ICAgNzg1OSAgIDogIDE3NCAgICAgICAgICAxMzMgICAgOiAgMjEyICAgICAgICAgXG4gMSA6IDIxNzUgICAgICAgICAgIDMgICAgICA6IDEzMDUgICAgICAgICAgICAgICAgMC4xMTc2Mjc6ICAgIDMgICAxIDoxMzA4OCAgIDE1MTY5ICA6IDUyMTUgICA4NDY5ICAgOiAgMTUyICAgICAgICAgIDEzMiAgICA6ICAxOTMgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgMiAgICAgIDogMTE1NCAgICAgICAgICAgICAgICAwLjExOTA5OTogICAgMyAgICAgICAgICAgICAgMjY0OTYgIDogNDE4MiAgIDg0OTAgICA6ICAxMzUgICAgICAgICAgMzUyICAgIDogIDE5MSAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICAwICAgICAgOiAgOTAyICAgICAgICAgICAgICAgIDAuMTI1MTAxOiAgICAzICAgICAgICAgICAgICA0NjYwNiAgOiAzNTgwICAgNzg2MCAgIDogIDEyMSAgICAgICAgICAyODEgICAgOiAgMTg0ICAgICAgICAgXG4gICAgICAgICAgICAgICAgICAgIDQgICAgICA6ICAzMjkgICAgICAgICAgICAgICAgMC4xNjI5OCA6ICAgIDMgICAgICAgICAgICAgIDIwMDEzICA6IDMzODAgICA4MDA2ICAgOiAgMTIxICAgICAgICAgIDMxNCAgICA6ICAxODIgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgKE90aGVyKTogIDQzMSAgICAgICAgICAgICAgICAoT3RoZXIpIDo4Mjc3MSAgICAgICAgICAgICAgKE90aGVyKTo1OTY2MCAgIChPdGhlcik6NjM1OTAgICAgICAgICAgKE90aGVyKTo2MTQ3NSAgICAgICAgIFxuIHF0eV9pcF9yZXNvbHZlZCBxdHlfbmFtZXNlcnZlcnMgcXR5X214X3NlcnZlcnMgICB0dGxfaG9zdG5hbWUgICB0bHNfc3NsX2NlcnRpZmljYXRlIHF0eV9yZWRpcmVjdHMgICB1cmxfZ29vZ2xlX2luZGV4IGRvbWFpbl9nb29nbGVfaW5kZXhcbiAxICAgICAgOjcxODA2ICAgMiAgICAgIDo1MzgzMyAgIDEgICAgICA6NDMxNTcgICAtMSAgICAgOiA0NDU0ICAgMDo0Mzc1MiAgICAgICAgICAgICAwICAgICAgOjUxOTMwICAgLTE6ICAgOTAgICAgICAgICAtMTogICA4OCAgICAgICAgICAgXG4gMiAgICAgIDogODY4OSAgIDQgICAgICA6MTgyMTAgICAwICAgICAgOjE0MTY0ICAgMjk5ICAgIDogMjMxMSAgIDE6NDQ4OTUgICAgICAgICAgICAgMSAgICAgIDoyMzgyOSAgIDAgOjg4MzQyICAgICAgICAgMCA6ODgyOTIgICAgICAgICAgIFxuIC0xICAgICA6IDQ0NTMgICAzICAgICAgOiA5MjM2ICAgMiAgICAgIDoxMzk4NCAgIDM1OTggICA6IDIxMzcgICAgICAgICAgICAgICAgICAgICAgIC0xICAgICA6IDY5NDkgICAxIDogIDIxNSAgICAgICAgIDEgOiAgMjY3ICAgICAgICAgICBcbiA0ICAgICAgOiAxODc1ICAgNSAgICAgIDogMjY4NCAgIDUgICAgICA6IDk2NDUgICAyOTIgICAgOiAyMDc4ICAgICAgICAgICAgICAgICAgICAgICAyICAgICAgOiA0NzEzICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gNSAgICAgIDogIDk5NiAgIDYgICAgICA6IDE1NDAgICAzICAgICAgOiAzNTM3ICAgMjk4ICAgIDogMTgzNiAgICAgICAgICAgICAgICAgICAgICAgMyAgICAgIDogIDg4MiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFxuIDMgICAgICA6ICA1OTUgICAxICAgICAgOiAxMjE4ICAgNyAgICAgIDogMTk0OCAgIDM1OTkgICA6IDE4MzYgICAgICAgICAgICAgICAgICAgICAgIDQgICAgICA6ICAyNjQgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBcbiAoT3RoZXIpOiAgMjMzICAgKE90aGVyKTogMTkyNiAgIChPdGhlcik6IDIyMTIgICAoT3RoZXIpOjczOTk1ICAgICAgICAgICAgICAgICAgICAgICAoT3RoZXIpOiAgIDgwICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXG4gdXJsX3Nob3J0ZW5lZCBwaGlzaGluZyBcbiAwOjg4MTYxICAgICAgIDA6NTgwMDAgIFxuIDE6ICA0ODYgICAgICAgMTozMDY0NyAgXG4gICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgIFxuICAgICAgICAgICAgICAgICAgICAgICAgXG4gICAgICAgICAgICAgICAgICAgICAgICBcbiAgICAgICAgICAgICAgICAgICAgICAgIFxuIn0= -->
+<pre><code>  qty_dot_url    qty_hyphen_url  qty_underline_url qty_slash_url   qty_questionmark_url qty_equal_url     qty_at_url     qty_and_url   
+ 2      :53649   0      :73066   0      :83318     0      :47509   0:87898              0      :81339   0      :86937   0      :84849  
+ 1      :15885   1      :10573   1      : 3306     1      :13522   1:  693              1      : 3514   1      : 1661   2      : 1315  
+ 3      :13205   2      : 2436   2      : 1040     3      : 8358   2:   50              3      : 1329   2      :   20   1      : 1175  
+ 4      : 3593   3      :  901   3      :  475     2      : 8072   3:    3              2      : 1241   4      :    7   3      :  259  
+ 5      : 1008   4      :  512   4      :  206     4      : 4676   7:    1              6      :  305   3      :    6   5      :  252  
+ 6      :  454   5      :  352   5      :   95     5      : 2999   9:    2              4      :  269   5      :    3   10     :  177  
+ (Other):  853   (Other):  807   (Other):  207     (Other): 3511                        (Other):  650   (Other):   13   (Other):  620  
+ qty_exclamation_url qty_space_url   qty_tilde_url qty_comma_url    qty_plus_url   qty_asterisk_url qty_hashtag_url qty_dollar_url 
+ 0      :88454       0      :88613   0:88430       0      :88523   0      :88518   0      :88588    0 :88636        0      :88593  
+ 1      :  167       1      :   20   1:  187       1      :   97   1      :   89   1      :   18    1 :    3        1      :   22  
+ 2      :   16       2      :    3   2:    5       3      :   20   2      :   17   2      :   11    2 :    2        3      :   12  
+ 3      :    2       3      :    3   3:   17       2      :    2   3      :    7   4      :    6    3 :    3        4      :    5  
+ 5      :    2       9      :    3   4:    2       4      :    2   4      :    5   3      :    3    7 :    1        2      :    4  
+ 9      :    2       4      :    2   5:    6       5      :    1   6      :    4   9      :    3    9 :    1        5      :    3  
+ (Other):    4       (Other):    3                 (Other):    2   (Other):    7   (Other):   18    13:    1        (Other):    8  
+ qty_percent_url  qty_tld_url      length_url    qty_dot_domain  qty_hyphen_domain qty_underline_domain qty_slash_domain
+ 0      :87111   1      :84471   18     : 4607   2      :55743   0      :80570     0:88592              0:88647         
+ 1      :  613   2      : 3535   19     : 4544   1      :23269   1      : 6713     1:   44                              
+ 2      :  244   3      :  352   17     : 4412   3      : 7664   2      :  966     2:   10                              
+ 3      :   86   0      :  230   20     : 4382   4      : 1626   3      :  218     3:    1                              
+ 4      :   83   4      :   51   16     : 4206   0      :  124   4      :  107                                          
+ 5      :   82   5      :    4   21     : 3829   5      :  100   5      :   40                                          
+ (Other):  428   (Other):    4   (Other):62667   (Other):  121   (Other):   33                                          
+ qty_questionmark_domain qty_equal_domain qty_at_domain qty_and_domain qty_exclamation_domain qty_space_domain qty_tilde_domain
+ 0:88647                 0:88647          0:88646       0:88647        0:88647                0:88647          0:88647         
+                                          1:    1                                                                              
+                                                                                                                               
+                                                                                                                               
+                                                                                                                               
+                                                                                                                               
+                                                                                                                               
+ qty_comma_domain qty_plus_domain qty_asterisk_domain qty_hashtag_domain qty_dollar_domain qty_percent_domain qty_vowels_domain
+ 0:88647          0:88647         0:88647             0:88647            0:88647           0:88647            5      :16331    
+                                                                                                              6      :14632    
+                                                                                                              4      :14628    
+                                                                                                              3      : 9872    
+                                                                                                              7      : 9588    
+                                                                                                              8      : 6322    
+                                                                                                              (Other):17274    
+ domain_length   domain_in_ip server_client_domain qty_dot_directory qty_hyphen_directory qty_underline_directory qty_slash_directory
+ 16     : 8218   0:88446      0:88248              -1     :47509     -1     :47509        -1     :47509           -1     :47509      
+ 18     : 6214   1:  201      1:  399              0      :25894     0      :33666        0      :37868           1      :13858      
+ 17     : 6195                                     1      :13307     1      : 4946        1      : 2284           3      : 8388      
+ 19     : 6003                                     2      : 1142     2      : 1031        2      :  615           2      : 8153      
+ 15     : 5904                                     3      :  414     3      :  428        3      :  196           4      : 4631      
+ 20     : 5596                                     4      :  194     4      :  258        4      :   77           5      : 2967      
+ (Other):50517                                     (Other):  187     (Other):  809        (Other):   98           (Other): 3141      
+ qty_questionmark_directory qty_equal_directory qty_at_directory qty_and_directory qty_exclamation_directory qty_space_directory
+ -1:47509                   -1:47509            -1     :47509    -1     :47509     -1     :47509             -1     :47509      
+ 0 :41138                   0 :40595            0      :41010    0      :40921     0      :41028             0      :41114      
+                            1 :  446            1      :  102    1      :  189     1      :   96             1      :   13      
+                            2 :   73            2      :    7    2      :    7     2      :    8             3      :    3      
+                            3 :   17            3      :    6    3      :    5     5      :    2             9      :    3      
+                            4 :    5            4      :    4    4      :    3     3      :    1             2      :    2      
+                            5 :    2            (Other):    9    (Other):   13     (Other):    3             (Other):    3      
+ qty_tilde_directory qty_comma_directory qty_plus_directory qty_asterisk_directory qty_hashtag_directory qty_dollar_directory
+ -1:47509            -1:47509            -1     :47509      -1     :47509          -1:47509              -1     :47509       
+ 0 :40926            0 :41103            0      :41105      0      :41091          0 :41138              0      :41109       
+ 1 :  182            1 :   22            1      :   18      1      :   16                                1      :   10       
+ 2 :    5            3 :   12            2      :    4      2      :   11                                2      :    3       
+ 3 :   17            5 :    1            3      :    4      4      :    4                                4      :    3       
+ 4 :    2                                4      :    2      14     :    3                                5      :    3       
+ 5 :    6                                (Other):    5      (Other):   13                                (Other):   10       
+ qty_percent_directory directory_length  qty_dot_file   qty_hyphen_file qty_underline_file qty_slash_file qty_questionmark_file
+ -1     :47509         -1     :47509    -1     :47509   -1     :47509   -1     :47509      -1:47509       -1:47509             
+ 0      :40280         1      : 8767    0      :26948   0      :39384   0      :39908      0 :41138       0 :41138             
+ 1      :  478         7      :  990    1      :13739   1      :  860   1      :  758                                          
+ 2      :  107         18     :  958    2      :  309   2      :  241   2      :  298                                          
+ 3      :   58         6      :  941    3      :  121   3      :  147   3      :   80                                          
+ 5      :   40         8      :  912    4      :   15   4      :  129   4      :   30                                          
+ (Other):  175         (Other):28570    (Other):    6   (Other):  377   (Other):   64                                          
+ qty_equal_file qty_at_file qty_and_file qty_exclamation_file qty_space_file  qty_tilde_file qty_comma_file qty_plus_file   qty_asterisk_file
+ -1:47509       -1:47509    -1:47509     -1:47509             -1     :47509   -1:47509       -1:47509       -1     :47509   -1:47509         
+ 0 :41026       0 :41113    0 :41016     0 :41050             0      :41125   0 :41123       0 :41115       0      :41116   0 :41126         
+ 1 :   82       1 :   24    1 :  119     1 :   86             1      :    7   1 :    7       1 :   10       1      :   12   1 :    8         
+ 2 :   26       2 :    1    2 :    2     2 :    1             2      :    1   2 :    6       2 :    1       3      :    3   2 :    1         
+ 3 :    4                   3 :    1     4 :    1             3      :    1   3 :    1       3 :   11       2      :    2   14:    1         
+                                                              4      :    1   4 :    1       5 :    1       4      :    1   20:    1         
+                                                              (Other):    3                                 (Other):    4   60:    1         
+ qty_hashtag_file qty_dollar_file qty_percent_file  file_length    qty_dot_params  qty_hyphen_params qty_underline_params qty_slash_params
+ -1:47509         -1:47509        -1     :47509    -1     :47509   -1     :81225   -1     :81225     -1     :81225        -1     :81225   
+ 0 :41138         0 :41138        0      :40800    0      :19624   0      : 4203   0      : 6054     0      : 5182        0      : 6689   
+                                  1      :  108    9      : 4797   1      : 1540   1      :  815     1      : 1349        1      :  257   
+                                  2      :   59    10     : 2125   2      :  829   2      :  174     2      :  319        3      :  130   
+                                  5      :   32    6      : 1324   4      :  201   4      :  169     3      :  258        4      :   78   
+                                  3      :   25    8      : 1213   3      :  179   3      :   87     4      :  145        2      :   71   
+                                  (Other):  114    (Other):12055   (Other):  470   (Other):  123     (Other):  169        (Other):  197   
+ qty_questionmark_params qty_equal_params qty_at_params qty_and_params  qty_exclamation_params qty_space_params qty_tilde_params
+ -1:81225                -1     :81225    -1:81225      -1     :81225   -1:81225               -1:81225         -1:81225        
+ 0 : 6722                1      : 3171    0 : 5849      0      : 3854   0 : 7397               0 : 7418         0 : 7417        
+ 1 :  673                3      : 1299    1 : 1562      2      : 1298   1 :   20               1 :    3         1 :    5        
+ 2 :   21                2      : 1184    2 :    9      1      : 1083   2 :    3               4 :    1                         
+ 3 :    3                0      :  665    8 :    1      3      :  249   8 :    1                                                
+ 7 :    1                6      :  330    10:    1      10     :  211   10:    1                                                
+ 9 :    2                (Other):  773                  (Other):  727                                                           
+ qty_comma_params qty_plus_params qty_asterisk_params qty_hashtag_params qty_dollar_params qty_percent_params params_length  
+ -1     :81225    -1     :81225   -1:81225            -1:81225           -1:81225          -1     :81225      -1     :81225  
+ 0      : 7333    0      : 7329   0 : 7417            0 : 7422           0 : 7407          0      : 6747      165    :  527  
+ 1      :   75    1      :   69   1 :    4                               1 :    6          1      :  144      23     :  212  
+ 3      :    8    2      :   13   4 :    1                               3 :    8          2      :  140      27     :  175  
+ 2      :    2    6      :    4                                          4 :    1          4      :   59      16     :  164  
+ 4      :    2    3      :    3                                                            5      :   43      42     :  163  
+ (Other):    2    (Other):    4                                                            (Other):  289      (Other): 6181  
+ tld_present_params   qty_params    email_in_url  time_response   domain_spf     asn_ip      time_domain_activation time_domain_expiration
+ -1:81225           -1     :81225   0:87022      -1      : 5860   -1:14677   -1     : 6473   -1     :24354          -1     :26210         
+ 0 : 5247           1      : 3301   1: 1625      0.181128:    4   0 :60882   13335  : 6157   7859   :  174          133    :  212         
+ 1 : 2175           3      : 1305                0.117627:    3   1 :13088   15169  : 5215   8469   :  152          132    :  193         
+                    2      : 1154                0.119099:    3              26496  : 4182   8490   :  135          352    :  191         
+                    0      :  902                0.125101:    3              46606  : 3580   7860   :  121          281    :  184         
+                    4      :  329                0.16298 :    3              20013  : 3380   8006   :  121          314    :  182         
+                    (Other):  431                (Other) :82771              (Other):59660   (Other):63590          (Other):61475         
+ qty_ip_resolved qty_nameservers qty_mx_servers   ttl_hostname   tls_ssl_certificate qty_redirects   url_google_index domain_google_index
+ 1      :71806   2      :53833   1      :43157   -1     : 4454   0:43752             0      :51930   -1:   90         -1:   88           
+ 2      : 8689   4      :18210   0      :14164   299    : 2311   1:44895             1      :23829   0 :88342         0 :88292           
+ -1     : 4453   3      : 9236   2      :13984   3598   : 2137                       -1     : 6949   1 :  215         1 :  267           
+ 4      : 1875   5      : 2684   5      : 9645   292    : 2078                       2      : 4713                                       
+ 5      :  996   6      : 1540   3      : 3537   298    : 1836                       3      :  882                                       
+ 3      :  595   1      : 1218   7      : 1948   3599   : 1836                       4      :  264                                       
+ (Other):  233   (Other): 1926   (Other): 2212   (Other):73995                       (Other):   80                                       
+ url_shortened phishing 
+ 0:88161       0:58000  
+ 1:  486       1:30647  
+                        
+                        
+                        
+                        
+                        </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="duplicated" class="section level1">
+<h1>Duplicated</h1>
+<p>Vemos el número de filas duplicadas.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtKGR1cGxpY2F0ZWQoZGF0YSkpXG5gYGAifQ== -->
+<pre class="r"><code>sum(duplicated(data))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="na" class="section level1">
+<h1>NA</h1>
+<p>Buscamos el número de valores faltantes.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YSAlPiUgXG4gIGlzLm5hKCkgJT4lIFxuICBzdW0oKVxuYGBgIn0= -->
+<pre class="r"><code>data %&gt;% 
+  is.na() %&gt;% 
+  sum()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Podemos ver que si tomamos a los valores -1 como NA tenemos los siguientes resultados:</p>
+<ul>
+<li>Las variables terminadas en <strong>directory</strong> y <strong>file</strong> tienen 47509 valores iguales a -1.</li>
+<li>Las variables terminadas en <strong>param</strong> tienen 81225 valores iguales a -1.</li>
+</ul>
+</div>
+<div id="correlations" class="section level1">
+<h1>Correlations</h1>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29ycnBsb3QoY29yKGRhdGEgJT4lIHNlbGVjdCgtcGhpc2hpbmcpKSwgdGwucG9zID0gXCJuXCIpXG5gYGAifQ== -->
+<pre class="r"><code>corrplot(cor(data %&gt;% select(-phishing)), tl.pos = &quot;n&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="variables-con-poca-o-nula-varianza" class="section level1">
+<h1>Variables con poca o nula Varianza</h1>
+<p>Hay bastantes variables que tienen varianza cercana o igual a 0.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubnp2X3ZhcnMgPC0gbmFtZXMoZGF0YSlbbmVhclplcm9WYXIoZGF0YSAlPiUgc2VsZWN0KC1waGlzaGluZykpXVxubnp2X3ZhcnNcbmBgYCJ9 -->
+<pre class="r"><code>nzv_vars &lt;- names(data)[nearZeroVar(data %&gt;% select(-phishing))]
+nzv_vars</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Podemos ver que las variables:</p>
+<ul>
+<li>Terminadas en <strong>url</strong> tienden a tener muy baja varianza.</li>
+<li>Terminadas en <strong>domain</strong> tienden a tener muy baja varianza.</li>
+</ul>
+<p>Usamos la función creada para evaluar el dataset completo y sus variables.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudmFyX2RmIDwtIGNyZWF0ZVZhckRhdGEoZGF0YSlcbmBgYCJ9 -->
+<pre class="r"><code>var_df &lt;- createVarData(data)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudmFyX2RmXG4jd3JpdGVfY3N2KHZhcl9kZiwgJ1ZhcmlhYmxlcy5jc3YnKVxuYGBgIn0= -->
+<pre class="r"><code>var_df
+#write_csv(var_df, &#39;Variables.csv&#39;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="plots" class="section level1">
+<h1>Plots</h1>
+<p>Creamos dos funciones para el análisis exploratorio de datos. <strong>plot_dist</strong> permite introducir un dataframe como argumento y generará un histograma sobre las variables continuas y un gráfico de barras sobre las variables discretas.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdF9kaXN0IDwtIGZ1bmN0aW9uKGRhdGEpe1xuICBmb3IgKHZhcmlhYmxlIGluIGNvbG5hbWVzKGRhdGEpKXtcbiAgICBpZihsYXBwbHkoZGF0YVt2YXJpYWJsZV0sIGlzLm51bWVyaWMpW1sxXV0pe1xuICAgICAgcGxvdCA8LSAoZGF0YSAlPiVcbiAgICAgICAgICAgIGdncGxvdChhZXNfc3RyaW5nKHggPSB2YXJpYWJsZSkpICtcbiAgICAgICAgICAgIGdlb21faGlzdG9ncmFtKGNvbCA9IFwiYmxhY2tcIiwgZmlsbCA9IFwiZ3JheVwiKStcbiAgICAgICAgICAgIGxhYnModGl0bGUgPSB2YXJpYWJsZSkrXG4gICAgICAgICAgICB0aGVtZV9taW5pbWFsKCkpXG4gICAgfSBlbHNlIGlmKGxhcHBseShkYXRhW3ZhcmlhYmxlXSwgaXMuZmFjdG9yKVtbMV1dKSB7XG4gICAgICBwbG90IDwtIChkYXRhICU+JVxuICAgICAgICAgICAgZ2dwbG90KGFlc19zdHJpbmcoeCA9IHZhcmlhYmxlKSkgK1xuICAgICAgICAgICAgZ2VvbV9iYXIoY29sID0gXCJibGFja1wiLCBmaWxsID0gXCJncmF5XCIpK1xuICAgICAgICAgICAgbGFicyh0aXRsZSA9IHZhcmlhYmxlKStcbiAgICAgICAgICAgIHRoZW1lX21pbmltYWwoKSlcbiAgICB9XG4gICAgcHJpbnQocGxvdClcbiAgfVxufVxuYGBgIn0= -->
+<pre class="r"><code>plot_dist &lt;- function(data){
+  for (variable in colnames(data)){
+    if(lapply(data[variable], is.numeric)[[1]]){
+      plot &lt;- (data %&gt;%
+            ggplot(aes_string(x = variable)) +
+            geom_histogram(col = &quot;black&quot;, fill = &quot;gray&quot;)+
+            labs(title = variable)+
+            theme_minimal())
+    } else if(lapply(data[variable], is.factor)[[1]]) {
+      plot &lt;- (data %&gt;%
+            ggplot(aes_string(x = variable)) +
+            geom_bar(col = &quot;black&quot;, fill = &quot;gray&quot;)+
+            labs(title = variable)+
+            theme_minimal())
+    }
+    print(plot)
+  }
+}</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdF9kaXN0KGRhdGEpXG5gYGAifQ== -->
+<pre class="r"><code>plot_dist(data)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<div id="resultado-plots" class="section level2">
+<h2>Resultado Plots</h2>
+<p>Se ven claramente las variables que tienen solo 1 estado. Hay variables que son numéricas que toman valores -1 0 y 1. Revisar qué significa el -1.</p>
+</div>
+<div id="trans1" class="section level2">
+<h2>trans1</h2>
+<p>Eliminamos todas las variables de <em>qty</em> que no sean <strong>url</strong>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubmFtZXMoZGF0YSlcbmBgYCJ9 -->
+<pre class="r"><code>names(data)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Las variables sueltas que sacamos tienen entre 40000 y 80000 valores -1. Incluirlas reduce mucho el número de observaciones, pero se puede probar.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuczEgPC0gZGF0YSAlPiVcbiAgc2VsZWN0KC1lbmRzX3dpdGgoJ2RvbWFpbicpLCBcbiAgICAgICAgIC1lbmRzX3dpdGgoJ2RpcmVjdG9yeScpLCBcbiAgICAgICAgIC1lbmRzX3dpdGgoJ2ZpbGUnKSxcbiAgICAgICAgIC1lbmRzX3dpdGgoJ3BhcmFtcycpLFxuICAgICAgICAgLWRpcmVjdG9yeV9sZW5ndGgsXG4gICAgICAgICAtZmlsZV9sZW5ndGgsXG4gICAgICAgICAtcGFyYW1zX2xlbmd0aClcbmBgYCJ9 -->
+<pre class="r"><code>data_trans1 &lt;- data %&gt;%
+  select(-ends_with(&#39;domain&#39;), 
+         -ends_with(&#39;directory&#39;), 
+         -ends_with(&#39;file&#39;),
+         -ends_with(&#39;params&#39;),
+         -directory_length,
+         -file_length,
+         -params_length)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGltKGRhdGFfdHJhbnMxKVxuYGBgIn0= -->
+<pre class="r"><code>dim(data_trans1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zMSlcbmBgYCJ9 -->
+<pre class="r"><code>createVarData(data_trans1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos de las variables que quedaron cuales tienen baja varianza.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubmFtZXMoZGF0YV90cmFuczEpW25lYXJaZXJvVmFyKGRhdGFfdHJhbnMxKV1cbmBgYCJ9 -->
+<pre class="r"><code>names(data_trans1)[nearZeroVar(data_trans1)]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuczEgJT4lXG4gIG11dGF0ZV9hbGwoYXMuZmFjdG9yKSAlPiVcbiAgc3VtbWFyeSgpXG5gYGAifQ== -->
+<pre class="r"><code>data_trans1 %&gt;%
+  mutate_all(as.factor) %&gt;%
+  summary()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="trans2" class="section level2">
+<h2>trans2</h2>
+<p>Eliminamos las observaciones con valor -1.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuczIgPC0gZGF0YV90cmFuczEgJT4lXG4gIGZpbHRlcih0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xKVxuYGBgIn0= -->
+<pre class="r"><code>data_trans2 &lt;- data_trans1 %&gt;%
+  filter(time_domain_expiration != -1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGltKGRhdGFfdHJhbnMyKVxuYGBgIn0= -->
+<pre class="r"><code>dim(data_trans2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zMilcbmBgYCJ9 -->
+<pre class="r"><code>createVarData(data_trans2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos de las variables que quedaron cuales tienen baja varianza.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubmFtZXMoZGF0YV90cmFuczIpW25lYXJaZXJvVmFyKGRhdGFfdHJhbnMyKV1cbmBgYCJ9 -->
+<pre class="r"><code>names(data_trans2)[nearZeroVar(data_trans2)]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuczIgJT4lXG4gIG11dGF0ZV9hbGwoYXMuZmFjdG9yKSAlPiVcbiAgc3VtbWFyeSgpXG5gYGAifQ== -->
+<pre class="r"><code>data_trans2 %&gt;%
+  mutate_all(as.factor) %&gt;%
+  summary()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="otro-approach-transx1" class="section level2">
+<h2>Otro Approach transX1</h2>
+<p><strong>Mas variables menos observaciones.</strong></p>
+<p>Pueden servir pero tienen 47000 valores -1.</p>
+<ul>
+<li>qty_dot_directory</li>
+<li>qty_hyphen_directory</li>
+<li>qty_underline_directory</li>
+<li>qty_slash_directory</li>
+<li>qty_dot_file</li>
+</ul>
+<p>Pueden servir como complemento.</p>
+<ul>
+<li>qty_vowels_domain</li>
+<li>qty_dot_domain</li>
+</ul>
+<p>Variables más potables: Ver qué variables se obtienen entrando y cuales no,</p>
+<ul>
+<li>qty_dot_url<br />
+</li>
+<li>qty_hyphen_url<br />
+</li>
+<li>qty_underline_url</li>
+<li>qty_slash_url</li>
+<li>length_url<br />
+</li>
+<li>domain_length</li>
+<li>time_response<br />
+</li>
+<li>domain_spf<br />
+</li>
+<li>asn_ip</li>
+<li>time_domain_activation</li>
+<li>time_domain_expiration</li>
+<li>qty_ip_resolved</li>
+<li>qty_nameservers</li>
+<li>qty_mx_servers</li>
+<li>ttl_hostname</li>
+<li>tls_ssl_certificate</li>
+<li>qty_redirects</li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuc1gxIDwtIGRhdGEgJT4lXG4gIHNlbGVjdChxdHlfZG90X2RpcmVjdG9yeSwgXG4gICAgICAgICBxdHlfaHlwaGVuX2RpcmVjdG9yeSxcbiAgICAgICAgIHF0eV91bmRlcmxpbmVfZGlyZWN0b3J5LFxuICAgICAgICAgcXR5X3NsYXNoX2RpcmVjdG9yeSxcbiAgICAgICAgIHF0eV9kb3RfZmlsZSxcbiAgICAgICAgIHF0eV92b3dlbHNfZG9tYWluLFxuICAgICAgICAgcXR5X2RvdF9kb21haW4sXG4gICAgICAgICBxdHlfZG90X3VybCxcbiAgICAgICAgIHF0eV9oeXBoZW5fdXJsLFxuICAgICAgICAgcXR5X3VuZGVybGluZV91cmwsXG4gICAgICAgICBxdHlfc2xhc2hfdXJsLFxuICAgICAgICAgbGVuZ3RoX3VybCxcbiAgICAgICAgIGRvbWFpbl9sZW5ndGgsXG4gICAgICAgICB0aW1lX3Jlc3BvbnNlLCBcbiAgICAgICAgIGRvbWFpbl9zcGYsIFxuICAgICAgICAgYXNuX2lwLCBcbiAgICAgICAgIHRpbWVfZG9tYWluX2FjdGl2YXRpb24sXG4gICAgICAgICB0aW1lX2RvbWFpbl9leHBpcmF0aW9uLFxuICAgICAgICAgcXR5X2lwX3Jlc29sdmVkLFxuICAgICAgICAgcXR5X25hbWVzZXJ2ZXJzLFxuICAgICAgICAgcXR5X214X3NlcnZlcnMsXG4gICAgICAgICB0dGxfaG9zdG5hbWUsXG4gICAgICAgICB0bHNfc3NsX2NlcnRpZmljYXRlLFxuICAgICAgICAgcXR5X3JlZGlyZWN0cyxcbiAgICAgICAgIHBoaXNoaW5nKVxuYGBgIn0= -->
+<pre class="r"><code>data_transX1 &lt;- data %&gt;%
+  select(qty_dot_directory, 
+         qty_hyphen_directory,
+         qty_underline_directory,
+         qty_slash_directory,
+         qty_dot_file,
+         qty_vowels_domain,
+         qty_dot_domain,
+         qty_dot_url,
+         qty_hyphen_url,
+         qty_underline_url,
+         qty_slash_url,
+         length_url,
+         domain_length,
+         time_response, 
+         domain_spf, 
+         asn_ip, 
+         time_domain_activation,
+         time_domain_expiration,
+         qty_ip_resolved,
+         qty_nameservers,
+         qty_mx_servers,
+         ttl_hostname,
+         tls_ssl_certificate,
+         qty_redirects,
+         phishing)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGltKGRhdGFfdHJhbnNYMSlcbmBgYCJ9 -->
+<pre class="r"><code>dim(data_transX1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zWDEpXG5gYGAifQ== -->
+<pre class="r"><code>createVarData(data_transX1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos de las variables que quedaron cuales tienen baja varianza.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubmFtZXMoZGF0YV90cmFuc1gxKVtuZWFyWmVyb1ZhcihkYXRhX3RyYW5zWDEpXVxuYGBgIn0= -->
+<pre class="r"><code>names(data_transX1)[nearZeroVar(data_transX1)]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuc1gxICU+JVxuICBtdXRhdGVfYWxsKGFzLmZhY3RvcikgJT4lXG4gIHN1bW1hcnkoKVxuYGBgIn0= -->
+<pre class="r"><code>data_transX1 %&gt;%
+  mutate_all(as.factor) %&gt;%
+  summary()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos la distribución de las variables cuando eliminamos las observaciones cuando time_domain_expiration == -1</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zWDEgJT4lIGZpbHRlcih0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xKSlcbmBgYCJ9 -->
+<pre class="r"><code>createVarData(data_transX1 %&gt;% filter(time_domain_expiration != -1))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Eliminando todas las observaciones que tienen -1 obtenemos el siguiente dataset.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGltKGRhdGFfdHJhbnNYMSAlPiUgZmlsdGVyKHF0eV9kb3RfZGlyZWN0b3J5ICE9IC0xLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkb21haW5fc3BmICE9IC0xKSlcbmBgYCJ9 -->
+<pre class="r"><code>dim(data_transX1 %&gt;% filter(qty_dot_directory != -1,
+                                      time_domain_expiration != -1,
+                                      domain_spf != -1))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zWDEgJT4lIGZpbHRlcihxdHlfZG90X2RpcmVjdG9yeSAhPSAtMSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdGltZV9kb21haW5fZXhwaXJhdGlvbiAhPSAtMSxcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZG9tYWluX3NwZiAhPSAtMSkpXG5gYGAifQ== -->
+<pre class="r"><code>createVarData(data_transX1 %&gt;% filter(qty_dot_directory != -1,
+                                      time_domain_expiration != -1,
+                                      domain_spf != -1))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Creamos el dataset para usarlo en el modelo logístico.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV9sb2cgPC0gZGF0YV90cmFuc1gxICU+JSBcbiAgZmlsdGVyKHF0eV9kb3RfZGlyZWN0b3J5ICE9IC0xLFxuICAgICAgICAgdGltZV9kb21haW5fZXhwaXJhdGlvbiAhPSAtMSxcbiAgICAgICAgIGRvbWFpbl9zcGYgIT0gLTEpXG5gYGAifQ== -->
+<pre class="r"><code>data_log &lt;- data_transX1 %&gt;% 
+  filter(qty_dot_directory != -1,
+         time_domain_expiration != -1,
+         domain_spf != -1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGFibGUoZGF0YV9sb2ckcGhpc2hpbmcpXG5gYGAifQ== -->
+<pre class="r"><code>table(data_log$phishing)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuMTM3NzIvKDYzNDcrMTM3NzIpXG5gYGAifQ== -->
+<pre class="r"><code>13772/(6347+13772)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29ycnBsb3QoY29yKGRhdGFfbG9nICU+JSBzZWxlY3QoLXBoaXNoaW5nKSkpXG5gYGAifQ== -->
+<pre class="r"><code>corrplot(cor(data_log %&gt;% select(-phishing)))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Hacemos la partición de los datos en train y test.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2V0LnNlZWQoNTQyKVxuc3BsaXQgPC0gaW5pdGlhbF9zcGxpdChkYXRhX2xvZywgcHJvcCA9IDAuOCwgc3RyYXRhID0gZGF0YV9sb2ckcGhpc2hpbmcpXG50cmFpbiA8LSB0cmFpbmluZyhzcGxpdClcbnRlc3QgPC0gdGVzdGluZyhzcGxpdClcbmBgYCJ9 -->
+<pre class="r"><code>set.seed(542)
+split &lt;- initial_split(data_log, prop = 0.8, strata = data_log$phishing)
+train &lt;- training(split)
+test &lt;- testing(split)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Entrenamos el modelo logístico.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9naXN0aWMgPC0gZ2xtKHBoaXNoaW5nfi4sIHRyYWluLCBmYW1pbHk9J2Jpbm9taWFsJylcbmBgYCJ9 -->
+<pre class="r"><code>logistic &lt;- glm(phishing~., train, family=&#39;binomial&#39;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos el resumen del modelo logístico.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShsb2dpc3RpYylcbmBgYCJ9 -->
+<pre class="r"><code>summary(logistic)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Evaluamos el modelo en el set de <strong>train</strong>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29uZnVzaW9uTWF0cml4KGFzLmZhY3RvcihpZmVsc2UobG9naXN0aWMkZml0dGVkLnZhbHVlcz4wLjUsIDEsIDApKSwgYXMuZmFjdG9yKHRyYWluJHBoaXNoaW5nKSwgcG9zaXRpdmUgPSBcIjFcIilcbmBgYCJ9 -->
+<pre class="r"><code>confusionMatrix(as.factor(ifelse(logistic$fitted.values&gt;0.5, 1, 0)), as.factor(train$phishing), positive = &quot;1&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29uZnVzaW9uTWF0cml4KGFzLmZhY3RvcihpZmVsc2UocHJlZGljdChsb2dpc3RpYywgbmV3ZGF0YSA9IHRlc3QsIHR5cGUgPSAncmVzcG9uc2UnKSA+IDAuNSwgMSwgMCkpLCBhcy5mYWN0b3IodGVzdCRwaGlzaGluZyksIHBvc2l0aXZlID0gXCIxXCIpXG5gYGAifQ== -->
+<pre class="r"><code>confusionMatrix(as.factor(ifelse(predict(logistic, newdata = test, type = &#39;response&#39;) &gt; 0.5, 1, 0)), as.factor(test$phishing), positive = &quot;1&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="transx2" class="section level2">
+<h2>transX2</h2>
+<p><strong>Menos variables más observaciones</strong>.</p>
+<p>Pueden servir como complemento.</p>
+<ul>
+<li>qty_vowels_domain</li>
+<li>qty_dot_domain</li>
+</ul>
+<p>Variables más potables: Ver qué variables se obtienen entrando y cuales no,</p>
+<ul>
+<li>qty_dot_url<br />
+</li>
+<li>qty_hyphen_url<br />
+</li>
+<li>qty_underline_url</li>
+<li>qty_slash_url</li>
+<li>length_url<br />
+</li>
+<li>domain_length</li>
+<li>time_response<br />
+</li>
+<li>domain_spf<br />
+</li>
+<li>asn_ip</li>
+<li>time_domain_activation</li>
+<li>time_domain_expiration</li>
+<li>qty_ip_resolved</li>
+<li>qty_nameservers</li>
+<li>qty_mx_servers</li>
+<li>ttl_hostname</li>
+<li>tls_ssl_certificate</li>
+<li>qty_redirects</li>
+</ul>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuc1gyIDwtIGRhdGEgJT4lXG4gIHNlbGVjdChxdHlfdm93ZWxzX2RvbWFpbixcbiAgICAgICAgIHF0eV9kb3RfZG9tYWluLFxuICAgICAgICAgcXR5X2RvdF91cmwsXG4gICAgICAgICBxdHlfaHlwaGVuX3VybCxcbiAgICAgICAgIHF0eV91bmRlcmxpbmVfdXJsLFxuICAgICAgICAgcXR5X3NsYXNoX3VybCxcbiAgICAgICAgIGxlbmd0aF91cmwsXG4gICAgICAgICBkb21haW5fbGVuZ3RoLFxuICAgICAgICAgdGltZV9yZXNwb25zZSwgXG4gICAgICAgICBkb21haW5fc3BmLCBcbiAgICAgICAgIGFzbl9pcCwgXG4gICAgICAgICB0aW1lX2RvbWFpbl9hY3RpdmF0aW9uLFxuICAgICAgICAgdGltZV9kb21haW5fZXhwaXJhdGlvbixcbiAgICAgICAgIHF0eV9pcF9yZXNvbHZlZCxcbiAgICAgICAgIHF0eV9uYW1lc2VydmVycyxcbiAgICAgICAgIHF0eV9teF9zZXJ2ZXJzLFxuICAgICAgICAgdHRsX2hvc3RuYW1lLFxuICAgICAgICAgdGxzX3NzbF9jZXJ0aWZpY2F0ZSxcbiAgICAgICAgIHF0eV9yZWRpcmVjdHMsXG4gICAgICAgICBwaGlzaGluZylcbmBgYCJ9 -->
+<pre class="r"><code>data_transX2 &lt;- data %&gt;%
+  select(qty_vowels_domain,
+         qty_dot_domain,
+         qty_dot_url,
+         qty_hyphen_url,
+         qty_underline_url,
+         qty_slash_url,
+         length_url,
+         domain_length,
+         time_response, 
+         domain_spf, 
+         asn_ip, 
+         time_domain_activation,
+         time_domain_expiration,
+         qty_ip_resolved,
+         qty_nameservers,
+         qty_mx_servers,
+         ttl_hostname,
+         tls_ssl_certificate,
+         qty_redirects,
+         phishing)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGltKGRhdGFfdHJhbnNYMilcbmBgYCJ9 -->
+<pre class="r"><code>dim(data_transX2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zWDIpXG5gYGAifQ== -->
+<pre class="r"><code>createVarData(data_transX2)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos de las variables que quedaron cuales tienen baja varianza.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubmFtZXMoZGF0YV90cmFuc1gyKVtuZWFyWmVyb1ZhcihkYXRhX3RyYW5zWDIpXVxuYGBgIn0= -->
+<pre class="r"><code>names(data_transX2)[nearZeroVar(data_transX2)]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV90cmFuc1gyICU+JVxuICBtdXRhdGVfYWxsKGFzLmZhY3RvcikgJT4lXG4gIHN1bW1hcnkoKVxuYGBgIn0= -->
+<pre class="r"><code>data_transX2 %&gt;%
+  mutate_all(as.factor) %&gt;%
+  summary()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Eliminando todas las observaciones que tienen -1 obtenemos el siguiente dataset.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGltKGRhdGFfdHJhbnNYMiAlPiUgZmlsdGVyKHRpbWVfZG9tYWluX2V4cGlyYXRpb24gIT0gLTEsXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgZG9tYWluX3NwZiAhPSAtMSkpXG5gYGAifQ== -->
+<pre class="r"><code>dim(data_transX2 %&gt;% filter(time_domain_expiration != -1,
+                            domain_spf != -1))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zWDIgJT4lIGZpbHRlcih0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xLFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkb21haW5fc3BmICE9IC0xKSlcbmBgYCJ9 -->
+<pre class="r"><code>createVarData(data_transX2 %&gt;% filter(time_domain_expiration != -1,
+                                      domain_spf != -1))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Creamos el dataset para usarlo en el modelo logístico.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGF0YV9sb2cyIDwtIGRhdGFfdHJhbnNYMiAlPiUgXG4gIGZpbHRlcih0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xLFxuICAgICAgICAgZG9tYWluX3NwZiAhPSAtMSlcbmBgYCJ9 -->
+<pre class="r"><code>data_log2 &lt;- data_transX2 %&gt;% 
+  filter(time_domain_expiration != -1,
+         domain_spf != -1)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGFibGUoZGF0YV9sb2cyJHBoaXNoaW5nKVxuYGBgIn0= -->
+<pre class="r"><code>table(data_log2$phishing)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuMTQwMzUvKDM2MzUxKyAxNDAzNSlcbmBgYCJ9 -->
+<pre class="r"><code>14035/(36351+ 14035)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29ycnBsb3QoY29yKGRhdGFfbG9nMiAlPiUgc2VsZWN0KC1waGlzaGluZykpKVxuYGBgIn0= -->
+<pre class="r"><code>corrplot(cor(data_log2 %&gt;% select(-phishing)))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Hacemos la partición de los datos en train y test.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2V0LnNlZWQoNTQyKVxuc3BsaXQgPC0gaW5pdGlhbF9zcGxpdChkYXRhX2xvZzIsIHByb3AgPSAwLjgsIHN0cmF0YSA9IGRhdGFfbG9nMiRwaGlzaGluZylcbnRyYWluIDwtIHRyYWluaW5nKHNwbGl0KVxudGVzdCA8LSB0ZXN0aW5nKHNwbGl0KVxuYGBgIn0= -->
+<pre class="r"><code>set.seed(542)
+split &lt;- initial_split(data_log2, prop = 0.8, strata = data_log2$phishing)
+train &lt;- training(split)
+test &lt;- testing(split)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Entrenamos el modelo logístico.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9naXN0aWMgPC0gZ2xtKHBoaXNoaW5nfi4sIHRyYWluLCBmYW1pbHk9J2Jpbm9taWFsJylcbmBgYCJ9 -->
+<pre class="r"><code>logistic &lt;- glm(phishing~., train, family=&#39;binomial&#39;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Vemos el resumen del modelo logístico.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3VtbWFyeShsb2dpc3RpYylcbmBgYCJ9 -->
+<pre class="r"><code>summary(logistic)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Evaluamos el modelo en el set de <strong>train</strong>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29uZnVzaW9uTWF0cml4KGFzLmZhY3RvcihpZmVsc2UobG9naXN0aWMkZml0dGVkLnZhbHVlcz4wLjUsIDEsIDApKSwgYXMuZmFjdG9yKHRyYWluJHBoaXNoaW5nKSwgcG9zaXRpdmUgPSBcIjFcIilcbmBgYCJ9 -->
+<pre class="r"><code>confusionMatrix(as.factor(ifelse(logistic$fitted.values&gt;0.5, 1, 0)), as.factor(train$phishing), positive = &quot;1&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29uZnVzaW9uTWF0cml4KGFzLmZhY3RvcihpZmVsc2UocHJlZGljdChsb2dpc3RpYywgbmV3ZGF0YSA9IHRlc3QsIHR5cGUgPSAncmVzcG9uc2UnKSA+IDAuNSwgMSwgMCkpLCBhcy5mYWN0b3IodGVzdCRwaGlzaGluZyksIHBvc2l0aXZlID0gXCIxXCIpXG5gYGAifQ== -->
+<pre class="r"><code>confusionMatrix(as.factor(ifelse(predict(logistic, newdata = test, type = &#39;response&#39;) &gt; 0.5, 1, 0)), as.factor(test$phishing), positive = &quot;1&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
+</div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUHJlcGFyYWNpw7NuIGRlIERhdG9zIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgojIERlc2NyaXBjacOzbgoKRXN0ZSBub3RlYm9vayBmdW5jaW9uYSBjb21vIHBydWViYSBpbmljaWFsIHBhcmEgYW5hbGl6YXIgbG9zIGRhdG9zIGRlIG1hbmVyYSBwcmVsaW1pbmFyIHkgZW50ZW5kZXIgZWwgc2V0IHF1ZSB0ZW5lbW9zIGNvbiBlbCBkYXRhc2V0IGZ1bGwgLSBQaGlzaGluZzIuCgojIFBhcXVldGVzCgpgYGB7cn0KbGlicmFyeShyZWFkcikKbGlicmFyeShyZWFkeGwpCmxpYnJhcnkoZHBseXIpCmxpYnJhcnkoZ2dwbG90MikKbGlicmFyeShjb3JycGxvdCkKbGlicmFyeShjYXJldCkKbGlicmFyeShyZWNpcGVzKQpgYGAKCiMgRGF0YXNldAoKSW1wb3J0YW1vcyBlbCBkYXRhc2V0IGZ1bGwuCgpgYGB7cn0KZGF0YSA8LSByZWFkX2NzdignRGF0YXNldHMvZGF0YXNldF9mdWxsLmNzdicpCmhlYWQoZGF0YSkKYGBgCgoKCgoK</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUHJlcGFyYWNpw7NuIGRlIERhdG9zIgpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sKLS0tCgojIERlc2NyaXBjacOzbgoKRXN0ZSBub3RlYm9vayBmdW5jaW9uYSBjb21vIHBydWViYSBpbmljaWFsIHBhcmEgYW5hbGl6YXIgbG9zIGRhdG9zIGRlIG1hbmVyYSBwcmVsaW1pbmFyIHkgZW50ZW5kZXIgZWwgc2V0IHF1ZSB0ZW5lbW9zIGNvbiBlbCBkYXRhc2V0IGZ1bGwgLSBQaGlzaGluZzIuCgojIFBhcXVldGVzCgpQYXF1ZXRlcyB1c2Fkb3MuCgpgYGB7cn0KbGlicmFyeShyZWFkcikKbGlicmFyeShyZWFkeGwpCmxpYnJhcnkoZHBseXIpCmxpYnJhcnkoZ2dwbG90MikKbGlicmFyeShjb3JycGxvdCkKbGlicmFyeShjYXJldCkKbGlicmFyeShyZWNpcGVzKQpsaWJyYXJ5KHJzYW1wbGUpCmBgYAoKIyBVdGlscwoKRXN0YSBmdW5jacOzbiBjcmVhZGEgZ2VuZXJhIHVuIGRhdGFzZXQgZG9uZGUgY2FkYSBmaWxhIGVzIHVuYSB2YXJpYWJsZSBkZWwgZGF0YXNldCBldmFsdWFkby4gUGFyYSBjYWRhIHZhcmlhYmxlIGRlbCBkYXRhc2V0IGV2YWx1YWRvIHNlIGluZm9ybWEgbGEgY2FudGlkYWQgZGUgdmFsb3JlcyBpZ3VhbGVzIGEgLTEgY29tbyBOQSwgCgpgYGB7cn0KY3JlYXRlVmFyRGF0YSA8LSBmdW5jdGlvbihkYXRhKXsKICBuenZfdmFycyA8LSBuYW1lcyhkYXRhKVtuZWFyWmVyb1ZhcihkYXRhICU+JSBzZWxlY3QoLXBoaXNoaW5nKSldCiAgbnp2X3ZhcnMKICAKICB2YXJpYWJsZXMgPC0gbmFtZXMoZGF0YSkKICB2ZWNfbmEgPC0gYygpCiAgCiAgaSA9IDEKICBmb3IgKHZhciBpbiB2YXJpYWJsZXMpIHsKICAgIHZlY19uYVtpXSA8LSBzdW0oZGF0YVt2YXJdID09IC0xKQogICAgaSA9IGkgKyAxCiAgICAjcHJpbnQocGFzdGUodmFyLCAiTkFzOiIsIHN1bShkYXRhW3Zhcl0gPT0gLTEpKSkKICB9CiAgCiAgdmFyX2RmID0gZGF0YS5mcmFtZSgiVmFyaWFibGUiID0gdmFyaWFibGVzLCAiTkFzIiA9IHZlY19uYSkKICAKICB2YXJfZGYgPC0gdmFyX2RmICU+JQogIG11dGF0ZShuenYgPSBpZmVsc2UodmFyaWFibGVzICVpbiUgbnp2X3ZhcnMsIDEsIDApLAogICAgICAgICBzZCA9IHJvdW5kKGFwcGx5KGRhdGEsIDIsIHNkKSwgNSksCiAgICAgICAgIGlkID0gc2VxKDE6bGVuZ3RoKHZhcl9kZiRWYXJpYWJsZSkpKQogIAogIHVuaXF1ZXMgPC0gKGFwcGx5KGRhdGEsIDIsIHVuaXF1ZSkpCiAgdmVjX3VuaXF1ZXMgPC0gYygpCiAgdmVjX21pbiA8LSBjKCkKICB2ZWNfbWF4IDwtIGMoKQogIGogPSAxCiAgCiAgZm9yIChlbGVtZW50IGluIHVuaXF1ZXMpewogICAgdmVjX3VuaXF1ZXNbal0gPC0gbGVuZ3RoKGVsZW1lbnQpCiAgICB2ZWNfbWluW2pdIDwtIG1pbihlbGVtZW50KQogICAgdmVjX21heFtqXSA8LSBtYXgoZWxlbWVudCkKICAgIGogPSBqICsgMQogIH0KICAKICB2YXJfZGYgPC0gdmFyX2RmICU+JQogICAgbXV0YXRlKHVuaXF1ZXMgPSB2ZWNfdW5pcXVlcywKICAgICAgICAgICBtaW4gPSB2ZWNfbWluLAogICAgICAgICAgIG1heCA9IHZlY19tYXgpCiAgCiAgcmV0dXJuKHZhcl9kZikKfQpgYGAKCgojIERhdGFzZXQKCkltcG9ydGFtb3MgZWwgZGF0YXNldCBmdWxsLgoKYGBge3J9CmRhdGEgPC0gcmVhZF9jc3YoJ0RhdGFzZXRzL2RhdGFzZXRfZnVsbC5jc3YnKQpoZWFkKGRhdGEpCmBgYAoKCgpUZW5lbW9zIDg4NjQ3IG9ic2VydmFjaW9uZXMgeSAxMTEgdmFyaWFibGVzIGV4cGxpY2F0aXZhcywgY29uIHVuYSByZXNwdWVzdGEgY2F0ZWfDs3JpY2EuCgpgYGB7cn0KZGltKGRhdGEpCmBgYAoKVmVtb3MgdW4gcmVzdW1lbiBkZSBsYSBlc3RydWN0dXJhIGRlbCBkYXRhc2V0LgoKYGBge3J9CmdsaW1wc2UoZGF0YSkKYGBgCgpQYXNhbmRvIHRvZGFzIGxhcyB2YXJpYWJsZXMgYSBmYWN0b3IgcG9kZW1vcyB2ZXIgZGUgbWFuZXJhIHLDoXBpZGEgbGFzIGZyZWN1ZW5jaWFzIGRlIGxvcyB2YWxvcmVzIMO6bmljb3MuCgpgYGB7cn0KZGF0YSAlPiUKICBtdXRhdGVfYWxsKGFzLmZhY3RvcikgJT4lCiAgc3VtbWFyeSgpCmBgYAoKIyBEdXBsaWNhdGVkCgpWZW1vcyBlbCBuw7ptZXJvIGRlIGZpbGFzIGR1cGxpY2FkYXMuCgpgYGB7cn0Kc3VtKGR1cGxpY2F0ZWQoZGF0YSkpCmBgYAoKIyBOQQoKQnVzY2Ftb3MgZWwgbsO6bWVybyBkZSB2YWxvcmVzIGZhbHRhbnRlcy4KCmBgYHtyfQpkYXRhICU+JSAKICBpcy5uYSgpICU+JSAKICBzdW0oKQpgYGAKClBvZGVtb3MgdmVyIHF1ZSBzaSB0b21hbW9zIGEgbG9zIHZhbG9yZXMgLTEgY29tbyBOQSB0ZW5lbW9zIGxvcyBzaWd1aWVudGVzIHJlc3VsdGFkb3M6CgoqIExhcyB2YXJpYWJsZXMgdGVybWluYWRhcyBlbiAqKmRpcmVjdG9yeSoqIHkgKipmaWxlKiogdGllbmVuIDQ3NTA5IHZhbG9yZXMgaWd1YWxlcyBhIC0xLgoqIExhcyB2YXJpYWJsZXMgdGVybWluYWRhcyBlbiAqKnBhcmFtKiogdGllbmVuIDgxMjI1IHZhbG9yZXMgaWd1YWxlcyBhIC0xLgoKIyBDb3JyZWxhdGlvbnMKCmBgYHtyfQpjb3JycGxvdChjb3IoZGF0YSAlPiUgc2VsZWN0KC1waGlzaGluZykpLCB0bC5wb3MgPSAibiIpCmBgYAoKCiMgVmFyaWFibGVzIGNvbiBwb2NhIG8gbnVsYSBWYXJpYW56YQoKSGF5IGJhc3RhbnRlcyB2YXJpYWJsZXMgcXVlIHRpZW5lbiB2YXJpYW56YSBjZXJjYW5hIG8gaWd1YWwgYSAwLgoKYGBge3J9Cm56dl92YXJzIDwtIG5hbWVzKGRhdGEpW25lYXJaZXJvVmFyKGRhdGEgJT4lIHNlbGVjdCgtcGhpc2hpbmcpKV0Kbnp2X3ZhcnMKYGBgCgpQb2RlbW9zIHZlciBxdWUgbGFzIHZhcmlhYmxlczoKCiogVGVybWluYWRhcyBlbiAqKnVybCoqIHRpZW5kZW4gYSB0ZW5lciBtdXkgYmFqYSB2YXJpYW56YS4KKiBUZXJtaW5hZGFzIGVuICoqZG9tYWluKiogdGllbmRlbiBhIHRlbmVyIG11eSBiYWphIHZhcmlhbnphLgoKClVzYW1vcyBsYSBmdW5jacOzbiBjcmVhZGEgcGFyYSBldmFsdWFyIGVsIGRhdGFzZXQgY29tcGxldG8geSBzdXMgdmFyaWFibGVzLgoKYGBge3J9CnZhcl9kZiA8LSBjcmVhdGVWYXJEYXRhKGRhdGEpCmBgYAoKCmBgYHtyfQp2YXJfZGYKI3dyaXRlX2Nzdih2YXJfZGYsICdWYXJpYWJsZXMuY3N2JykKYGBgCgoKIyBQbG90cwoKQ3JlYW1vcyBkb3MgZnVuY2lvbmVzIHBhcmEgZWwgYW7DoWxpc2lzIGV4cGxvcmF0b3JpbyBkZSBkYXRvcy4gKipwbG90X2Rpc3QqKiBwZXJtaXRlIGludHJvZHVjaXIgdW4gZGF0YWZyYW1lIGNvbW8gYXJndW1lbnRvIHkgZ2VuZXJhcsOhIHVuIGhpc3RvZ3JhbWEgc29icmUgbGFzIHZhcmlhYmxlcyBjb250aW51YXMgeSB1biBncsOhZmljbyBkZSBiYXJyYXMgc29icmUgbGFzIHZhcmlhYmxlcyBkaXNjcmV0YXMuCgpgYGB7cn0KcGxvdF9kaXN0IDwtIGZ1bmN0aW9uKGRhdGEpewogIGZvciAodmFyaWFibGUgaW4gY29sbmFtZXMoZGF0YSkpewogICAgaWYobGFwcGx5KGRhdGFbdmFyaWFibGVdLCBpcy5udW1lcmljKVtbMV1dKXsKICAgICAgcGxvdCA8LSAoZGF0YSAlPiUKICAgICAgICAgICAgZ2dwbG90KGFlc19zdHJpbmcoeCA9IHZhcmlhYmxlKSkgKwogICAgICAgICAgICBnZW9tX2hpc3RvZ3JhbShjb2wgPSAiYmxhY2siLCBmaWxsID0gImdyYXkiKSsKICAgICAgICAgICAgbGFicyh0aXRsZSA9IHZhcmlhYmxlKSsKICAgICAgICAgICAgdGhlbWVfbWluaW1hbCgpKQogICAgfSBlbHNlIGlmKGxhcHBseShkYXRhW3ZhcmlhYmxlXSwgaXMuZmFjdG9yKVtbMV1dKSB7CiAgICAgIHBsb3QgPC0gKGRhdGEgJT4lCiAgICAgICAgICAgIGdncGxvdChhZXNfc3RyaW5nKHggPSB2YXJpYWJsZSkpICsKICAgICAgICAgICAgZ2VvbV9iYXIoY29sID0gImJsYWNrIiwgZmlsbCA9ICJncmF5IikrCiAgICAgICAgICAgIGxhYnModGl0bGUgPSB2YXJpYWJsZSkrCiAgICAgICAgICAgIHRoZW1lX21pbmltYWwoKSkKICAgIH0KICAgIHByaW50KHBsb3QpCiAgfQp9CmBgYAoKCmBgYHtyfQpwbG90X2Rpc3QoZGF0YSkKYGBgCgojIyBSZXN1bHRhZG8gUGxvdHMKClNlIHZlbiBjbGFyYW1lbnRlIGxhcyB2YXJpYWJsZXMgcXVlIHRpZW5lbiBzb2xvIDEgZXN0YWRvLgpIYXkgdmFyaWFibGVzIHF1ZSBzb24gbnVtw6lyaWNhcyBxdWUgdG9tYW4gdmFsb3JlcyAtMSAwIHkgMS4gUmV2aXNhciBxdcOpIHNpZ25pZmljYSBlbCAtMS4KCgojIyB0cmFuczEKCkVsaW1pbmFtb3MgdG9kYXMgbGFzIHZhcmlhYmxlcyBkZSAqcXR5KiBxdWUgbm8gc2VhbiAqKnVybCoqLgoKYGBge3J9Cm5hbWVzKGRhdGEpCmBgYAoKTGFzIHZhcmlhYmxlcyBzdWVsdGFzIHF1ZSBzYWNhbW9zIHRpZW5lbiBlbnRyZSA0MDAwMCB5IDgwMDAwIHZhbG9yZXMgLTEuIEluY2x1aXJsYXMgcmVkdWNlIG11Y2hvIGVsIG7Dum1lcm8gZGUgb2JzZXJ2YWNpb25lcywgcGVybyBzZSBwdWVkZSBwcm9iYXIuCgpgYGB7cn0KZGF0YV90cmFuczEgPC0gZGF0YSAlPiUKICBzZWxlY3QoLWVuZHNfd2l0aCgnZG9tYWluJyksIAogICAgICAgICAtZW5kc193aXRoKCdkaXJlY3RvcnknKSwgCiAgICAgICAgIC1lbmRzX3dpdGgoJ2ZpbGUnKSwKICAgICAgICAgLWVuZHNfd2l0aCgncGFyYW1zJyksCiAgICAgICAgIC1kaXJlY3RvcnlfbGVuZ3RoLAogICAgICAgICAtZmlsZV9sZW5ndGgsCiAgICAgICAgIC1wYXJhbXNfbGVuZ3RoKQpgYGAKCmBgYHtyfQpkaW0oZGF0YV90cmFuczEpCmBgYAoKYGBge3J9CmNyZWF0ZVZhckRhdGEoZGF0YV90cmFuczEpCmBgYAoKVmVtb3MgZGUgbGFzIHZhcmlhYmxlcyBxdWUgcXVlZGFyb24gY3VhbGVzIHRpZW5lbiBiYWphIHZhcmlhbnphLgoKYGBge3J9Cm5hbWVzKGRhdGFfdHJhbnMxKVtuZWFyWmVyb1ZhcihkYXRhX3RyYW5zMSldCmBgYAoKYGBge3J9CmRhdGFfdHJhbnMxICU+JQogIG11dGF0ZV9hbGwoYXMuZmFjdG9yKSAlPiUKICBzdW1tYXJ5KCkKYGBgCgoKIyMgdHJhbnMyCgpFbGltaW5hbW9zIGxhcyBvYnNlcnZhY2lvbmVzIGNvbiB2YWxvciAtMS4KCmBgYHtyfQpkYXRhX3RyYW5zMiA8LSBkYXRhX3RyYW5zMSAlPiUKICBmaWx0ZXIodGltZV9kb21haW5fZXhwaXJhdGlvbiAhPSAtMSkKYGBgCgoKYGBge3J9CmRpbShkYXRhX3RyYW5zMikKYGBgCgpgYGB7cn0KY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zMikKYGBgCgpWZW1vcyBkZSBsYXMgdmFyaWFibGVzIHF1ZSBxdWVkYXJvbiBjdWFsZXMgdGllbmVuIGJhamEgdmFyaWFuemEuCgpgYGB7cn0KbmFtZXMoZGF0YV90cmFuczIpW25lYXJaZXJvVmFyKGRhdGFfdHJhbnMyKV0KYGBgCgpgYGB7cn0KZGF0YV90cmFuczIgJT4lCiAgbXV0YXRlX2FsbChhcy5mYWN0b3IpICU+JQogIHN1bW1hcnkoKQpgYGAKCgoKCiMjIE90cm8gQXBwcm9hY2ggdHJhbnNYMQoKKipNYXMgdmFyaWFibGVzIG1lbm9zIG9ic2VydmFjaW9uZXMuKioKClB1ZWRlbiBzZXJ2aXIgcGVybyB0aWVuZW4gNDcwMDAgdmFsb3JlcyAtMS4KCiogcXR5X2RvdF9kaXJlY3RvcnkgCiogcXR5X2h5cGhlbl9kaXJlY3RvcnkgCiogcXR5X3VuZGVybGluZV9kaXJlY3RvcnkgCiogcXR5X3NsYXNoX2RpcmVjdG9yeQoqIHF0eV9kb3RfZmlsZQoKUHVlZGVuIHNlcnZpciBjb21vIGNvbXBsZW1lbnRvLgoKKiBxdHlfdm93ZWxzX2RvbWFpbgoqIHF0eV9kb3RfZG9tYWluCgpWYXJpYWJsZXMgbcOhcyBwb3RhYmxlczoKVmVyIHF1w6kgdmFyaWFibGVzIHNlIG9idGllbmVuIGVudHJhbmRvIHkgY3VhbGVzIG5vLCAKCiogcXR5X2RvdF91cmwgICAgCiogcXR5X2h5cGhlbl91cmwgIAoqIHF0eV91bmRlcmxpbmVfdXJsIAoqIHF0eV9zbGFzaF91cmwKKiBsZW5ndGhfdXJsICAgIAoqIGRvbWFpbl9sZW5ndGgKKiB0aW1lX3Jlc3BvbnNlICAgCiogZG9tYWluX3NwZiAgICAgCiogYXNuX2lwIAoqIHRpbWVfZG9tYWluX2FjdGl2YXRpb24KKiB0aW1lX2RvbWFpbl9leHBpcmF0aW9uCiogcXR5X2lwX3Jlc29sdmVkCiogcXR5X25hbWVzZXJ2ZXJzCiogcXR5X214X3NlcnZlcnMKKiB0dGxfaG9zdG5hbWUgCiogdGxzX3NzbF9jZXJ0aWZpY2F0ZQoqIHF0eV9yZWRpcmVjdHMKCmBgYHtyfQpkYXRhX3RyYW5zWDEgPC0gZGF0YSAlPiUKICBzZWxlY3QocXR5X2RvdF9kaXJlY3RvcnksIAogICAgICAgICBxdHlfaHlwaGVuX2RpcmVjdG9yeSwKICAgICAgICAgcXR5X3VuZGVybGluZV9kaXJlY3RvcnksCiAgICAgICAgIHF0eV9zbGFzaF9kaXJlY3RvcnksCiAgICAgICAgIHF0eV9kb3RfZmlsZSwKICAgICAgICAgcXR5X3Zvd2Vsc19kb21haW4sCiAgICAgICAgIHF0eV9kb3RfZG9tYWluLAogICAgICAgICBxdHlfZG90X3VybCwKICAgICAgICAgcXR5X2h5cGhlbl91cmwsCiAgICAgICAgIHF0eV91bmRlcmxpbmVfdXJsLAogICAgICAgICBxdHlfc2xhc2hfdXJsLAogICAgICAgICBsZW5ndGhfdXJsLAogICAgICAgICBkb21haW5fbGVuZ3RoLAogICAgICAgICB0aW1lX3Jlc3BvbnNlLCAKICAgICAgICAgZG9tYWluX3NwZiwgCiAgICAgICAgIGFzbl9pcCwgCiAgICAgICAgIHRpbWVfZG9tYWluX2FjdGl2YXRpb24sCiAgICAgICAgIHRpbWVfZG9tYWluX2V4cGlyYXRpb24sCiAgICAgICAgIHF0eV9pcF9yZXNvbHZlZCwKICAgICAgICAgcXR5X25hbWVzZXJ2ZXJzLAogICAgICAgICBxdHlfbXhfc2VydmVycywKICAgICAgICAgdHRsX2hvc3RuYW1lLAogICAgICAgICB0bHNfc3NsX2NlcnRpZmljYXRlLAogICAgICAgICBxdHlfcmVkaXJlY3RzLAogICAgICAgICBwaGlzaGluZykKYGBgCgoKYGBge3J9CmRpbShkYXRhX3RyYW5zWDEpCmBgYAoKYGBge3J9CmNyZWF0ZVZhckRhdGEoZGF0YV90cmFuc1gxKQpgYGAKClZlbW9zIGRlIGxhcyB2YXJpYWJsZXMgcXVlIHF1ZWRhcm9uIGN1YWxlcyB0aWVuZW4gYmFqYSB2YXJpYW56YS4KCmBgYHtyfQpuYW1lcyhkYXRhX3RyYW5zWDEpW25lYXJaZXJvVmFyKGRhdGFfdHJhbnNYMSldCmBgYAoKYGBge3J9CmRhdGFfdHJhbnNYMSAlPiUKICBtdXRhdGVfYWxsKGFzLmZhY3RvcikgJT4lCiAgc3VtbWFyeSgpCmBgYAoKVmVtb3MgbGEgZGlzdHJpYnVjacOzbiBkZSBsYXMgdmFyaWFibGVzIGN1YW5kbyBlbGltaW5hbW9zIGxhcyBvYnNlcnZhY2lvbmVzIGN1YW5kbyB0aW1lX2RvbWFpbl9leHBpcmF0aW9uID09IC0xCgpgYGB7cn0KY3JlYXRlVmFyRGF0YShkYXRhX3RyYW5zWDEgJT4lIGZpbHRlcih0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xKSkKYGBgCgpFbGltaW5hbmRvIHRvZGFzIGxhcyBvYnNlcnZhY2lvbmVzIHF1ZSB0aWVuZW4gLTEgb2J0ZW5lbW9zIGVsIHNpZ3VpZW50ZSBkYXRhc2V0LgoKYGBge3J9CmRpbShkYXRhX3RyYW5zWDEgJT4lIGZpbHRlcihxdHlfZG90X2RpcmVjdG9yeSAhPSAtMSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGRvbWFpbl9zcGYgIT0gLTEpKQpgYGAKCmBgYHtyfQpjcmVhdGVWYXJEYXRhKGRhdGFfdHJhbnNYMSAlPiUgZmlsdGVyKHF0eV9kb3RfZGlyZWN0b3J5ICE9IC0xLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRpbWVfZG9tYWluX2V4cGlyYXRpb24gIT0gLTEsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZG9tYWluX3NwZiAhPSAtMSkpCmBgYAoKQ3JlYW1vcyBlbCBkYXRhc2V0IHBhcmEgdXNhcmxvIGVuIGVsIG1vZGVsbyBsb2fDrXN0aWNvLgoKYGBge3J9CmRhdGFfbG9nIDwtIGRhdGFfdHJhbnNYMSAlPiUgCiAgZmlsdGVyKHF0eV9kb3RfZGlyZWN0b3J5ICE9IC0xLAogICAgICAgICB0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xLAogICAgICAgICBkb21haW5fc3BmICE9IC0xKQpgYGAKCgpgYGB7cn0KdGFibGUoZGF0YV9sb2ckcGhpc2hpbmcpCmBgYApgYGB7cn0KMTM3NzIvKDYzNDcrMTM3NzIpCmBgYAoKCgpgYGB7cn0KY29ycnBsb3QoY29yKGRhdGFfbG9nICU+JSBzZWxlY3QoLXBoaXNoaW5nKSkpCmBgYAoKSGFjZW1vcyBsYSBwYXJ0aWNpw7NuIGRlIGxvcyBkYXRvcyBlbiB0cmFpbiB5IHRlc3QuCgpgYGB7cn0Kc2V0LnNlZWQoNTQyKQpzcGxpdCA8LSBpbml0aWFsX3NwbGl0KGRhdGFfbG9nLCBwcm9wID0gMC44LCBzdHJhdGEgPSBkYXRhX2xvZyRwaGlzaGluZykKdHJhaW4gPC0gdHJhaW5pbmcoc3BsaXQpCnRlc3QgPC0gdGVzdGluZyhzcGxpdCkKYGBgCgpFbnRyZW5hbW9zIGVsIG1vZGVsbyBsb2fDrXN0aWNvLgoKYGBge3J9CmxvZ2lzdGljIDwtIGdsbShwaGlzaGluZ34uLCB0cmFpbiwgZmFtaWx5PSdiaW5vbWlhbCcpCmBgYAoKVmVtb3MgZWwgcmVzdW1lbiBkZWwgbW9kZWxvIGxvZ8Otc3RpY28uCgpgYGB7cn0Kc3VtbWFyeShsb2dpc3RpYykKYGBgCgpFdmFsdWFtb3MgZWwgbW9kZWxvIGVuIGVsIHNldCBkZSAqKnRyYWluKiouCgpgYGB7cn0KY29uZnVzaW9uTWF0cml4KGFzLmZhY3RvcihpZmVsc2UobG9naXN0aWMkZml0dGVkLnZhbHVlcz4wLjUsIDEsIDApKSwgYXMuZmFjdG9yKHRyYWluJHBoaXNoaW5nKSwgcG9zaXRpdmUgPSAiMSIpCmBgYAoKCgoKYGBge3J9CmNvbmZ1c2lvbk1hdHJpeChhcy5mYWN0b3IoaWZlbHNlKHByZWRpY3QobG9naXN0aWMsIG5ld2RhdGEgPSB0ZXN0LCB0eXBlID0gJ3Jlc3BvbnNlJykgPiAwLjUsIDEsIDApKSwgYXMuZmFjdG9yKHRlc3QkcGhpc2hpbmcpLCBwb3NpdGl2ZSA9ICIxIikKYGBgCgoKCgojIyB0cmFuc1gyCgoqKk1lbm9zIHZhcmlhYmxlcyBtw6FzIG9ic2VydmFjaW9uZXMqKi4KClB1ZWRlbiBzZXJ2aXIgY29tbyBjb21wbGVtZW50by4KCiogcXR5X3Zvd2Vsc19kb21haW4KKiBxdHlfZG90X2RvbWFpbgoKVmFyaWFibGVzIG3DoXMgcG90YWJsZXM6ClZlciBxdcOpIHZhcmlhYmxlcyBzZSBvYnRpZW5lbiBlbnRyYW5kbyB5IGN1YWxlcyBubywgCgoqIHF0eV9kb3RfdXJsICAgIAoqIHF0eV9oeXBoZW5fdXJsICAKKiBxdHlfdW5kZXJsaW5lX3VybCAKKiBxdHlfc2xhc2hfdXJsCiogbGVuZ3RoX3VybCAgICAKKiBkb21haW5fbGVuZ3RoCiogdGltZV9yZXNwb25zZSAgIAoqIGRvbWFpbl9zcGYgICAgIAoqIGFzbl9pcCAKKiB0aW1lX2RvbWFpbl9hY3RpdmF0aW9uCiogdGltZV9kb21haW5fZXhwaXJhdGlvbgoqIHF0eV9pcF9yZXNvbHZlZAoqIHF0eV9uYW1lc2VydmVycwoqIHF0eV9teF9zZXJ2ZXJzCiogdHRsX2hvc3RuYW1lIAoqIHRsc19zc2xfY2VydGlmaWNhdGUKKiBxdHlfcmVkaXJlY3RzCgpgYGB7cn0KZGF0YV90cmFuc1gyIDwtIGRhdGEgJT4lCiAgc2VsZWN0KHF0eV92b3dlbHNfZG9tYWluLAogICAgICAgICBxdHlfZG90X2RvbWFpbiwKICAgICAgICAgcXR5X2RvdF91cmwsCiAgICAgICAgIHF0eV9oeXBoZW5fdXJsLAogICAgICAgICBxdHlfdW5kZXJsaW5lX3VybCwKICAgICAgICAgcXR5X3NsYXNoX3VybCwKICAgICAgICAgbGVuZ3RoX3VybCwKICAgICAgICAgZG9tYWluX2xlbmd0aCwKICAgICAgICAgdGltZV9yZXNwb25zZSwgCiAgICAgICAgIGRvbWFpbl9zcGYsIAogICAgICAgICBhc25faXAsIAogICAgICAgICB0aW1lX2RvbWFpbl9hY3RpdmF0aW9uLAogICAgICAgICB0aW1lX2RvbWFpbl9leHBpcmF0aW9uLAogICAgICAgICBxdHlfaXBfcmVzb2x2ZWQsCiAgICAgICAgIHF0eV9uYW1lc2VydmVycywKICAgICAgICAgcXR5X214X3NlcnZlcnMsCiAgICAgICAgIHR0bF9ob3N0bmFtZSwKICAgICAgICAgdGxzX3NzbF9jZXJ0aWZpY2F0ZSwKICAgICAgICAgcXR5X3JlZGlyZWN0cywKICAgICAgICAgcGhpc2hpbmcpCmBgYAoKCmBgYHtyfQpkaW0oZGF0YV90cmFuc1gyKQpgYGAKCmBgYHtyfQpjcmVhdGVWYXJEYXRhKGRhdGFfdHJhbnNYMikKYGBgCgpWZW1vcyBkZSBsYXMgdmFyaWFibGVzIHF1ZSBxdWVkYXJvbiBjdWFsZXMgdGllbmVuIGJhamEgdmFyaWFuemEuCgpgYGB7cn0KbmFtZXMoZGF0YV90cmFuc1gyKVtuZWFyWmVyb1ZhcihkYXRhX3RyYW5zWDIpXQpgYGAKCmBgYHtyfQpkYXRhX3RyYW5zWDIgJT4lCiAgbXV0YXRlX2FsbChhcy5mYWN0b3IpICU+JQogIHN1bW1hcnkoKQpgYGAKCgpFbGltaW5hbmRvIHRvZGFzIGxhcyBvYnNlcnZhY2lvbmVzIHF1ZSB0aWVuZW4gLTEgb2J0ZW5lbW9zIGVsIHNpZ3VpZW50ZSBkYXRhc2V0LgoKYGBge3J9CmRpbShkYXRhX3RyYW5zWDIgJT4lIGZpbHRlcih0aW1lX2RvbWFpbl9leHBpcmF0aW9uICE9IC0xLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgZG9tYWluX3NwZiAhPSAtMSkpCmBgYAoKYGBge3J9CmNyZWF0ZVZhckRhdGEoZGF0YV90cmFuc1gyICU+JSBmaWx0ZXIodGltZV9kb21haW5fZXhwaXJhdGlvbiAhPSAtMSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBkb21haW5fc3BmICE9IC0xKSkKYGBgCgpDcmVhbW9zIGVsIGRhdGFzZXQgcGFyYSB1c2FybG8gZW4gZWwgbW9kZWxvIGxvZ8Otc3RpY28uCgpgYGB7cn0KZGF0YV9sb2cyIDwtIGRhdGFfdHJhbnNYMiAlPiUgCiAgZmlsdGVyKHRpbWVfZG9tYWluX2V4cGlyYXRpb24gIT0gLTEsCiAgICAgICAgIGRvbWFpbl9zcGYgIT0gLTEpCmBgYAoKCmBgYHtyfQp0YWJsZShkYXRhX2xvZzIkcGhpc2hpbmcpCmBgYAoKYGBge3J9CjE0MDM1LygzNjM1MSsgMTQwMzUpCmBgYAoKCgpgYGB7cn0KY29ycnBsb3QoY29yKGRhdGFfbG9nMiAlPiUgc2VsZWN0KC1waGlzaGluZykpKQpgYGAKCkhhY2Vtb3MgbGEgcGFydGljacOzbiBkZSBsb3MgZGF0b3MgZW4gdHJhaW4geSB0ZXN0LgoKYGBge3J9CnNldC5zZWVkKDU0MikKc3BsaXQgPC0gaW5pdGlhbF9zcGxpdChkYXRhX2xvZzIsIHByb3AgPSAwLjgsIHN0cmF0YSA9IGRhdGFfbG9nMiRwaGlzaGluZykKdHJhaW4gPC0gdHJhaW5pbmcoc3BsaXQpCnRlc3QgPC0gdGVzdGluZyhzcGxpdCkKYGBgCgpFbnRyZW5hbW9zIGVsIG1vZGVsbyBsb2fDrXN0aWNvLgoKYGBge3J9CmxvZ2lzdGljIDwtIGdsbShwaGlzaGluZ34uLCB0cmFpbiwgZmFtaWx5PSdiaW5vbWlhbCcpCmBgYAoKVmVtb3MgZWwgcmVzdW1lbiBkZWwgbW9kZWxvIGxvZ8Otc3RpY28uCgpgYGB7cn0Kc3VtbWFyeShsb2dpc3RpYykKYGBgCgpFdmFsdWFtb3MgZWwgbW9kZWxvIGVuIGVsIHNldCBkZSAqKnRyYWluKiouCgpgYGB7cn0KY29uZnVzaW9uTWF0cml4KGFzLmZhY3RvcihpZmVsc2UobG9naXN0aWMkZml0dGVkLnZhbHVlcz4wLjUsIDEsIDApKSwgYXMuZmFjdG9yKHRyYWluJHBoaXNoaW5nKSwgcG9zaXRpdmUgPSAiMSIpCmBgYAoKCgoKYGBge3J9CmNvbmZ1c2lvbk1hdHJpeChhcy5mYWN0b3IoaWZlbHNlKHByZWRpY3QobG9naXN0aWMsIG5ld2RhdGEgPSB0ZXN0LCB0eXBlID0gJ3Jlc3BvbnNlJykgPiAwLjUsIDEsIDApKSwgYXMuZmFjdG9yKHRlc3QkcGhpc2hpbmcpLCBwb3NpdGl2ZSA9ICIxIikKYGBgCgoKCgoKCgoKCgoKCgoKCgoK</div>
 
 
 
