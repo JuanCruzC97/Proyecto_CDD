@@ -36,21 +36,21 @@ Links útiles:
 
 ## Predicción: 
 
-* Modelos Regresión:
-	* Regresion logística
-	Regresion logística Ridge 
-	Regresion logística Lasso 
-	Regresion logística ElasticNet (regularizacion mas ratio)
+* **Modelos Regresión**:
+	* Regresión logística
+	* Regresión logística Ridge 
+	* Regresión logística Lasso 
+	* Regresión logística ElasticNet (regularizacion mas ratio)
 
-Modelos KNN:
-	KNN (k)
+* **Modelos KNN**:
+	* KNN (k)
 	
-Modelos SVM:
-	SVM Lineal (C)
-	SVM Kernel Poly (C, degree)
-	SVM Radial (C, gamma)
+* **Modelos SVM**:
+	* SVM Lineal (C)
+	* SVM Kernel Poly (C, degree)
+	* SVM Radial (C, gamma)
 	
-Modelos Árboles:
-	Árbol de Clasificación
-	Random Forest (muchos) 
-	Modelos Boost
+* **Modelos Árboles**:
+	* Árbol de Clasificación
+	* Random Forest (muchos) 
+	* Modelos Boost
