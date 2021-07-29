@@ -36,8 +36,8 @@ Links útiles:
 
 ## Predicción: 
 
-Modelos Regresión:
-	Regresion logística
+* Modelos Regresión:
+	* Regresion logística
 	Regresion logística Ridge 
 	Regresion logística Lasso 
 	Regresion logística ElasticNet (regularizacion mas ratio)
