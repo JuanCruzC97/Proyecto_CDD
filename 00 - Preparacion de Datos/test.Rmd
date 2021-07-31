@@ -1,0 +1,37 @@
+---
+title: "Untitled"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(readr)
+```
+
+```{r}
+#importo los datasets
+dat <- read_csv("../Datasets/phishing_site_urls.csv")
+veri <- read_csv("../Datasets/verified_online.csv")
+
+```
+
+```{r}
+prueba1<-data.frame(veri$url,veri$verified)
+colnames(prueba1)[1]<-"url"
+colnames(prueba1)[2]<-"verified"
+prueba2<-data.frame(dat$URL,dat$Label)
+colnames(prueba2)[1]<-"url"
+colnames(prueba2)[2]<-"verified"
+newdf<-rbind(prueba1,prueba2)
+newdf<- mutate (newdf,verified_phish=ifelse(newdf$verified=="yes" | newdf$verified=="bad","yes","no"))
+newdf[1,1,1]
+```
+
+```{r}
+#creo variables binarias si tienen https/ www para despues separar el link en dominio..
+newdf<-mutate(newdf,has_https=ifelse(substr(newdf$url,1,5)=="https",1,0))
+newdf<-mutate(newdf,has_www=ifelse(substr(newdf$url,1,3)=="www",1,0))
+table(newdf$has_https,newdf$verified_phish)
+table(newdf$has_www,newdf$verified_phish)
+```
+
+
