@@ -24,14 +24,15 @@ colnames(prueba2)[2]<-"verified"
 newdf<-rbind(prueba1,prueba2)
 newdf<- mutate (newdf,verified_phish=ifelse(newdf$verified=="yes" | newdf$verified=="bad","yes","no"))
 newdf[1,1,1]
+
+str_remove_all(newdf$url, "[']")
 ```
 
 ```{r}
 #creo variables binarias si tienen https/ www para despues separar el link en dominio..
+newdf$url<-str_remove_all(newdf$url, "[']")
 newdf<-mutate(newdf,has_https=ifelse(substr(newdf$url,1,5)=="https",1,0))
 newdf<-mutate(newdf,has_www=ifelse(substr(newdf$url,1,3)=="www",1,0))
 table(newdf$has_https,newdf$verified_phish)
 table(newdf$has_www,newdf$verified_phish)
 ```
-
-
