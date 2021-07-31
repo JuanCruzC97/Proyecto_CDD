@@ -81,7 +81,15 @@ def scrapearPrincipal(urls, inicio, fin, sleep_mu = 1, sleep_sd = 0.5):
         print('----------------------------------------')
 
         dict_df['df_'+str(n)] = df
-
+        
+        pausa = np.random.normal(sleep_mu * k, sleep_sd * (k/2))
+        if pausa < 0:
+            pausa = 4
+        time.sleep(pausa)
+        
+        print(f'Tiempo en pausa {pausa} segundos.')
+        print('----------------------------------------')
+        
     df_total = pd.concat(dict_df.values()).reset_index(drop = True)
     df_total.index = np.arange((inicio-1)*20 + 1, fin * 20 + 1)
     df_total
