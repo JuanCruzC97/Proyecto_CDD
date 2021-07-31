@@ -15,6 +15,12 @@ Links útiles:
 	a. Usar dataset con variables generadas
 	b. Usar dataset con URLs para generar analisis propio y variables propias.
 
+### Webscraping
+
+* Resolver Captcha en links particulares.
+* Eliminar la columna URL_esp (se consigue con id).
+* Agregar sleep aleatorio.
+
 ## Preparación de Datos: 
 
 1. Borrar duplicados 
