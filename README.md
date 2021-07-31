@@ -17,8 +17,8 @@ Links útiles:
 
 ### Webscraping
 
-* Resolver Captcha en links particulares.
-* Eliminar la columna URL_esp (se consigue con id).
+* Resolver Captcha en links particulares.[Parcial]
+* Eliminar la columna URL_esp (se consigue con id).[Listo]
 * Agregar sleep aleatorio.
 
 ## Preparación de Datos: 
