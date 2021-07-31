@@ -19,7 +19,7 @@ def listarURL(inicio, fin):
     return urls
 
 
-def scrapearPrincipal(urls):
+def scrapearPrincipal(urls, inicio, fin, sleep_mu = 1, sleep_sd = 0.5):
 
     # Este diccionario tendrá los dataframes generados en cada URL scrapeado.
     dict_df = {}
@@ -64,7 +64,7 @@ def scrapearPrincipal(urls):
             if url[-3:] == '...':
                 # Hacemos el request usando el id.
 
-                url = scrapearParticular(iden)
+                url = scrapearParticular(iden, sleep_mu, sleep_sd)
                 completo = int(0)     
             
             valid = selector_list[i].xpath('./td[4]/strong/text()').extract()[0]
@@ -73,21 +73,23 @@ def scrapearPrincipal(urls):
             df.iloc[i-1] = [iden, url, completo, valid, online]
 
             fin_row = time.time()
-            print(f'Página número{n} fila número {i} scrapeada - tiempo {fin_row - inicio_row} segundos.')
+            print(f'Página número {inicio + n} fila número {i} scrapeada - tiempo {round(fin_row - inicio_row,5)} segundos.')
 
         fin_page = time.time()
-        print(f'Página número {n} scrapeada')
-        print(f'Tiempo transcurrido {fin_page - inicio_page} segundos')
+        print(f'Página número {inicio + n} scrapeada')
+        print(f'Tiempo transcurrido {round(fin_page - inicio_page,5)} segundos')
         print('----------------------------------------')
 
         dict_df['df_'+str(n)] = df
 
     df_total = pd.concat(dict_df.values()).reset_index(drop = True)
+    df_total.index = np.arange((inicio-1)*20 + 1, fin * 20 + 1)
+    df_total
 
     return df_total
 
 
-def scrapearParticular(identificador):
+def scrapearParticular(identificador, sleep_mu = 1, sleep_sd = 0.5):
     cookies = {
         'PHPSESSID': 'ar40cv5km3vtbe5s0qk3pkr2so0g6hbn',
         'cf_clearance': '3cbfd7809556f0cc6e51182e0536dfda54ff67a7-1627699354-0-250',
@@ -112,6 +114,9 @@ def scrapearParticular(identificador):
         ('phish_id', identificador),
     )
 
+    sleep_sec = np.random.normal(sleep_mu, sleep_sd)
+    time.sleep(sleep_sec)
+    
     response = requests.get('https://www.phishtank.com/phish_detail.php', headers=headers, params=params, cookies=cookies)
 
     html_particular = response.content
@@ -131,10 +136,10 @@ def scrapearParticular(identificador):
 
 # inicio y fin indican la cantidad de páginas de Phish Search a scrapear.
 inicio = 10
-fin = 10
+fin = 11
 
 urls = listarURL(inicio, fin)
 
-df_completo = scrapearPrincipal(urls)
+df_completo = scrapearPrincipal(urls, inicio, fin, sleep_mu= 1.5, sleep_sd = 0.5)
 
-df_completo.to_csv('Dataset_Phishing_INVALIDS.csv')
+df_completo.to_csv(f'Dataset_Phishing_{inicio}a{fin}.csv')
