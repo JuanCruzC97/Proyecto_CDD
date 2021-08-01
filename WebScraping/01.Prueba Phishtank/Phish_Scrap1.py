@@ -82,7 +82,7 @@ def scrapearPrincipal(urls, inicio, fin, sleep_mu = 1, sleep_sd = 0.5):
 
         dict_df['df_'+str(n)] = df
         
-        pausa = np.random.normal(sleep_mu * k, sleep_sd * (k/2))
+        pausa = np.random.normal(sleep_mu * k, 2)
         if pausa < 0:
             pausa = 4
         time.sleep(pausa)
@@ -148,6 +148,6 @@ fin = 11
 
 urls = listarURL(inicio, fin)
 
-df_completo = scrapearPrincipal(urls, inicio, fin, sleep_mu= 1.5, sleep_sd = 0.5)
+df_completo = scrapearPrincipal(urls, inicio, fin, sleep_mu= 1.5, sleep_sd = 0.5, k = 10)
 
 df_completo.to_csv(f'Dataset_Phishing_{inicio}a{fin}.csv')
