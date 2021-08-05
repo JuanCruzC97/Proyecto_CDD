@@ -2,7 +2,7 @@
 title: "Preparación de Datos"
 output: html_notebook
 ---
-#Prueba Tobias Git
+
 # Descripción
 
 Este notebook funciona como prueba inicial para analizar los datos de manera preliminar y entender el set que tenemos con el dataset full - Phishing2.
@@ -76,7 +76,7 @@ createVarData <- function(data){
 Importamos el dataset full.
 
 ```{r}
-#data <- read_csv('/Datasets/dataset_full.csv')
+#data <- read_csv('Datasets/dataset_full.csv')
 #head(data)
 ```
 
@@ -328,17 +328,17 @@ data_transX1 <- data %>%
          qty_slash_url,
          length_url,
          domain_length,
-         time_response, 
-         domain_spf, 
-         asn_ip, 
-         time_domain_activation,
-         time_domain_expiration,
-         qty_ip_resolved,
-         qty_nameservers,
-         qty_mx_servers,
-         ttl_hostname,
-         tls_ssl_certificate,
-         qty_redirects,
+         #time_response, 
+         #domain_spf, 
+         #asn_ip, 
+         #time_domain_activation,
+         #time_domain_expiration,
+         #qty_ip_resolved,
+         #qty_nameservers,
+         #qty_mx_servers,
+         #ttl_hostname,
+         #tls_ssl_certificate,
+         #qty_redirects,
          phishing)
 ```
 
@@ -372,9 +372,7 @@ createVarData(data_transX1 %>% filter(time_domain_expiration != -1))
 Eliminando todas las observaciones que tienen -1 obtenemos el siguiente dataset.
 
 ```{r}
-dim(data_transX1 %>% filter(qty_dot_directory != -1,
-                                      time_domain_expiration != -1,
-                                      domain_spf != -1))
+dim(data_transX1 %>% filter(qty_dot_directory != -1)
 ```
 
 ```{r}
@@ -387,9 +385,9 @@ Creamos el dataset para usarlo en el modelo logístico.
 
 ```{r}
 data_log <- data_transX1 %>% 
-  filter(qty_dot_directory != -1,
-         time_domain_expiration != -1,
-         domain_spf != -1)
+  filter(qty_dot_directory != -1)#,
+         #time_domain_expiration != -1,
+         #domain_spf != -1)
 ```
 
 
