@@ -10,7 +10,11 @@ import time
 def listarURL(inicio, fin):
     urls = [0] * (fin - inicio + 1)
     for i, page in enumerate(range(inicio,fin + 1)):
+        # URL para phishing INVALIDS tanto activos como inactivos.
         url = 'https://www.phishtank.com/phish_search.php?page='+str(page)+'&valid=n&Search=Search'
+        
+        # URL para phishing VALIDS solo inactivos.
+        #url = 'https://www.phishtank.com/phish_search.php?page='+str(page)+'&active=n&valid=y&Search=Search'
         urls[i] = url
 
     print('Listado de URLs a scrapear')
@@ -18,9 +22,12 @@ def listarURL(inicio, fin):
 
     return urls
 
+# k es el factor multiplicador de tiempo.
 
-def scrapearPrincipal(urls, inicio, fin, sleep_mu = 1, sleep_sd = 0.5):
+def scrapearPrincipal(urls, inicio, fin, sleep_mu = 1, sleep_sd = 0.5, k = 2):
 
+    inicio_scrap = time.time()
+    
     # Este diccionario tendrá los dataframes generados en cada URL scrapeado.
     dict_df = {}
 
@@ -79,8 +86,16 @@ def scrapearPrincipal(urls, inicio, fin, sleep_mu = 1, sleep_sd = 0.5):
         print(f'Página número {inicio + n} scrapeada')
         print(f'Tiempo transcurrido {round(fin_page - inicio_page,5)} segundos')
         print('----------------------------------------')
-
+        
         dict_df['df_'+str(n)] = df
+
+        # Acá genera el csv cada vez que termina una página.
+        # Si se corta el script no se pierde el progreso.
+        # Al ser un dataframe intermedio no tiene el index correcto.
+        df_total = pd.concat(dict_df.values()).reset_index(drop = True)
+        df_total
+
+        df_total.to_csv(f'Dataset_Phishing_{inicio}a{fin}.csv')
         
         pausa = np.random.normal(sleep_mu * k, 2)
         if pausa < 0:
@@ -89,15 +104,21 @@ def scrapearPrincipal(urls, inicio, fin, sleep_mu = 1, sleep_sd = 0.5):
         
         print(f'Tiempo en pausa {pausa} segundos.')
         print('----------------------------------------')
-        
+
+    # Acá solo genera el csv cuando termina TODAS las páginas.
+    # Este es el csv final creado que incluye el correcto index.
     df_total = pd.concat(dict_df.values()).reset_index(drop = True)
     df_total.index = np.arange((inicio-1)*20 + 1, fin * 20 + 1)
     df_total
 
+    fin_scrap = time.time()
+    print(f'Tiempo total de scraping {round(fin_scrap - inicio_scrap, 5)} segundos')
+    
     return df_total
 
 
 def scrapearParticular(identificador, sleep_mu = 1, sleep_sd = 0.5):
+    '''
     cookies = {
         'PHPSESSID': 'ar40cv5km3vtbe5s0qk3pkr2so0g6hbn',
         'cf_clearance': '3cbfd7809556f0cc6e51182e0536dfda54ff67a7-1627699354-0-250',
@@ -120,9 +141,33 @@ def scrapearParticular(identificador, sleep_mu = 1, sleep_sd = 0.5):
 
     params = (
         ('phish_id', identificador),
-    )
+    )'''
 
+    #https://curl.trillworks.com/
+    
+    cookies = {
+        'PHPSESSID': '0apufpl35ual1eifvb5kfeba23cd8io4',
+        'cf_chl_prog': 'a12',
+        'cf_clearance': 'be3c154cdc620172c65d2007e336379b7bc12e7b-1627787767-0-250',
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:81.0) Gecko/20100101 Firefox/81.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Connection': 'keep-alive',
+        'Referer': 'https://www.phishtank.com/phish_search.php?page=570&valid=n&Search=Search',
+        'Upgrade-Insecure-Requests': '1',
+        'TE': 'Trailers',
+    }
+
+    params = (
+        ('phish_id', identificador),
+    )
+    
     sleep_sec = np.random.normal(sleep_mu, sleep_sd)
+    if sleep_sec < 0:
+        sleep_sec = 2
     time.sleep(sleep_sec)
     
     response = requests.get('https://www.phishtank.com/phish_detail.php', headers=headers, params=params, cookies=cookies)
@@ -134,17 +179,18 @@ def scrapearParticular(identificador, sleep_mu = 1, sleep_sd = 0.5):
     url_particular = selector_particular_list.extract()[0]
 
     return url_particular
+
     #NB. Original query string below. It seems impossible to parse and
     #reproduce query strings 100% accurately so the one below is given
     #in case the reproduced version is not "correct".
-    # response = requests.get('https://www.phishtank.com/phish_detail.php?phish_id=7096325', headers=headers, cookies=cookies)
+    # response = requests.get('https://www.phishtank.com/phish_detail.php?phish_id=5353136', headers=headers, cookies=cookies)
 
 
 
 
 # inicio y fin indican la cantidad de páginas de Phish Search a scrapear.
-inicio = 10
-fin = 11
+inicio = 903
+fin = 1150
 
 urls = listarURL(inicio, fin)
 
