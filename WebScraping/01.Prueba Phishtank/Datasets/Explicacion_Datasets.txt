@@ -1,8 +1,0 @@
-Dataset con 10.000 links scrapeados del listado INVALID (no phishing).
-	
-	* Dataset_Phishing_Total.csv
-
-Dataset con las top 10.000 links de la página Alexa (links buenos).
-
-	* Dataset_Top_urls.csv
-	https://www.kaggle.com/cheedcheed/top1m
