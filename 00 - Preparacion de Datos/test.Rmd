@@ -12,7 +12,8 @@ library(readr)
 #importo los datasets
 dat <- read_csv("../Datasets/phishing_site_urls.csv")
 veri <- read_csv("../Datasets/verified_online.csv")
-
+Dataset_Phishing_1a5 <- read_csv("WebScraping/01.Prueba Phishtank/Dataset_Phishing_1a5.csv")
+View(Dataset_Phishing_1a5)
 ```
 
 ```{r}
