@@ -1,0 +1,624 @@
+---
+title: "Preparación de Datos"
+output: html_notebook
+---
+
+# Descripción
+
+Este notebook funciona como prueba inicial para analizar los datos de manera preliminar y entender el set que tenemos con el dataset full - Phishing2.
+
+# Paquetes
+
+Paquetes usados.
+
+```{r}
+library(readr)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(caret)
+library(recipes)
+library(rsample)
+```
+
+# Utils
+
+Esta función creada genera un dataset donde cada fila es una variable del dataset evaluado. Para cada variable del dataset evaluado se informa la cantidad de valores iguales a -1 como NA, 
+
+```{r}
+createVarData <- function(data){
+  nzv_vars <- names(data)[nearZeroVar(data %>% select(-phishing))]
+  nzv_vars
+  
+  variables <- names(data)
+  vec_na <- c()
+  
+  i = 1
+  for (var in variables) {
+    vec_na[i] <- sum(data[var] == -1)
+    i = i + 1
+    #print(paste(var, "NAs:", sum(data[var] == -1)))
+  }
+  
+  var_df = data.frame("Variable" = variables, "NAs" = vec_na)
+  
+  var_df <- var_df %>%
+  mutate(nzv = ifelse(variables %in% nzv_vars, 1, 0),
+         sd = round(apply(data, 2, sd), 5),
+         id = seq(1:length(var_df$Variable)))
+  
+  uniques <- (apply(data, 2, unique))
+  vec_uniques <- c()
+  vec_min <- c()
+  vec_max <- c()
+  j = 1
+  
+  for (element in uniques){
+    vec_uniques[j] <- length(element)
+    vec_min[j] <- min(element)
+    vec_max[j] <- max(element)
+    j = j + 1
+  }
+  
+  var_df <- var_df %>%
+    mutate(uniques = vec_uniques,
+           min = vec_min,
+           max = vec_max)
+  
+  return(var_df)
+}
+```
+
+
+# Dataset
+
+Importamos el dataset full.
+
+```{r}
+#data <- read_csv('Datasets/dataset_full.csv')
+#head(data)
+```
+
+```{r}
+data <- read_csv('../Datasets/dataset_full.csv')
+head(data)
+```
+
+
+Tenemos 88647 observaciones y 111 variables explicativas, con una respuesta categórica.
+
+```{r}
+dim(data)
+```
+
+Vemos un resumen de la estructura del dataset.
+
+```{r}
+glimpse(data)
+```
+
+Pasando todas las variables a factor podemos ver de manera rápida las frecuencias de los valores únicos.
+
+```{r}
+data %>%
+  mutate_all(as.factor) %>%
+  summary()
+```
+
+# Duplicated
+
+Vemos el número de filas duplicadas.
+
+```{r}
+sum(duplicated(data))
+```
+
+# NA
+
+Buscamos el número de valores faltantes.
+
+```{r}
+data %>% 
+  is.na() %>% 
+  sum()
+```
+
+Podemos ver que si tomamos a los valores -1 como NA tenemos los siguientes resultados:
+
+* Las variables terminadas en **directory** y **file** tienen 47509 valores iguales a -1.
+* Las variables terminadas en **param** tienen 81225 valores iguales a -1.
+
+# Correlations
+
+```{r}
+corrplot(cor(data %>% select(-phishing)), tl.pos = "n")
+```
+
+
+# Variables con poca o nula Varianza
+
+Hay bastantes variables que tienen varianza cercana o igual a 0.
+
+```{r}
+nzv_vars <- names(data)[nearZeroVar(data %>% select(-phishing))]
+nzv_vars
+```
+
+Podemos ver que las variables:
+
+* Terminadas en **url** tienden a tener muy baja varianza.
+* Terminadas en **domain** tienden a tener muy baja varianza.
+
+
+Usamos la función creada para evaluar el dataset completo y sus variables.
+
+```{r}
+var_df <- createVarData(data)
+```
+
+
+```{r}
+var_df
+#write_csv(var_df, 'Variables.csv')
+```
+
+
+# Plots
+
+Creamos dos funciones para el análisis exploratorio de datos. **plot_dist** permite introducir un dataframe como argumento y generará un histograma sobre las variables continuas y un gráfico de barras sobre las variables discretas.
+
+```{r}
+plot_dist <- function(data){
+  for (variable in colnames(data)){
+    if(lapply(data[variable], is.numeric)[[1]]){
+      plot <- (data %>%
+            ggplot(aes_string(x = variable)) +
+            geom_histogram(col = "black", fill = "gray")+
+            labs(title = variable)+
+            theme_minimal())
+    } else if(lapply(data[variable], is.factor)[[1]]) {
+      plot <- (data %>%
+            ggplot(aes_string(x = variable)) +
+            geom_bar(col = "black", fill = "gray")+
+            labs(title = variable)+
+            theme_minimal())
+    }
+    print(plot)
+  }
+}
+```
+
+
+```{r}
+plot_dist(data)
+```
+
+## Resultado Plots
+
+Se ven claramente las variables que tienen solo 1 estado.
+Hay variables que son numéricas que toman valores -1 0 y 1. Revisar qué significa el -1.
+
+
+## trans1
+
+Eliminamos todas las variables de *qty* que no sean **url**.
+
+```{r}
+names(data)
+```
+
+Las variables sueltas que sacamos tienen entre 40000 y 80000 valores -1. Incluirlas reduce mucho el número de observaciones, pero se puede probar.
+
+```{r}
+data_trans1 <- data %>%
+  select(-ends_with('domain'), 
+         -ends_with('directory'), 
+         -ends_with('file'),
+         -ends_with('params'),
+         -directory_length,
+         -file_length,
+         -params_length)
+```
+
+```{r}
+dim(data_trans1)
+```
+
+```{r}
+createVarData(data_trans1)
+```
+
+Vemos de las variables que quedaron cuales tienen baja varianza.
+
+```{r}
+names(data_trans1)[nearZeroVar(data_trans1)]
+```
+
+```{r}
+data_trans1 %>%
+  mutate_all(as.factor) %>%
+  summary()
+```
+
+
+## trans2
+
+Eliminamos las observaciones con valor -1.
+
+```{r}
+data_trans2 <- data_trans1 %>%
+  filter(time_domain_expiration != -1)
+```
+
+
+```{r}
+dim(data_trans2)
+```
+
+```{r}
+createVarData(data_trans2)
+```
+
+Vemos de las variables que quedaron cuales tienen baja varianza.
+
+```{r}
+names(data_trans2)[nearZeroVar(data_trans2)]
+```
+
+```{r}
+data_trans2 %>%
+  mutate_all(as.factor) %>%
+  summary()
+```
+
+
+
+
+## Otro Approach transX1
+
+**Mas variables menos observaciones.**
+
+Pueden servir pero tienen 47000 valores -1.
+
+* qty_dot_directory 
+* qty_hyphen_directory 
+* qty_underline_directory 
+* qty_slash_directory
+* qty_dot_file
+
+Pueden servir como complemento.
+
+* qty_vowels_domain
+* qty_dot_domain
+
+Variables más potables:
+Ver qué variables se obtienen entrando y cuales no, 
+
+* qty_dot_url    
+* qty_hyphen_url  
+* qty_underline_url 
+* qty_slash_url
+* length_url    
+* domain_length
+* time_response   
+* domain_spf     
+* asn_ip 
+* time_domain_activation
+* time_domain_expiration
+* qty_ip_resolved
+* qty_nameservers
+* qty_mx_servers
+* ttl_hostname 
+* tls_ssl_certificate
+* qty_redirects
+
+```{r}
+data_transX1 <- data %>%
+  select(qty_dot_directory, 
+         qty_hyphen_directory,
+         qty_underline_directory,
+         qty_slash_directory,
+         qty_dot_file,
+         qty_vowels_domain,
+         qty_dot_domain,
+         qty_dot_url,
+         qty_hyphen_url,
+         qty_underline_url,
+         qty_slash_url,
+         length_url,
+         domain_length,
+         #time_response, 
+         #domain_spf, 
+         #asn_ip, 
+         #time_domain_activation,
+         #time_domain_expiration,
+         #qty_ip_resolved,
+         #qty_nameservers,
+         #qty_mx_servers,
+         #ttl_hostname,
+         #tls_ssl_certificate,
+         #qty_redirects,
+         phishing)
+```
+
+
+```{r}
+dim(data_transX1)
+```
+
+```{r}
+createVarData(data_transX1)
+```
+
+Vemos de las variables que quedaron cuales tienen baja varianza.
+
+```{r}
+names(data_transX1)[nearZeroVar(data_transX1)]
+```
+
+```{r}
+data_transX1 %>%
+  mutate_all(as.factor) %>%
+  summary()
+```
+
+Vemos la distribución de las variables cuando eliminamos las observaciones cuando time_domain_expiration == -1
+
+```{r}
+createVarData(data_transX1 %>% filter(time_domain_expiration != -1))
+```
+
+Eliminando todas las observaciones que tienen -1 obtenemos el siguiente dataset.
+
+```{r}
+dim(data_transX1 %>% filter(qty_dot_directory != -1)
+```
+
+```{r}
+createVarData(data_transX1 %>% filter(qty_dot_directory != -1,
+                                      time_domain_expiration != -1,
+                                      domain_spf != -1))
+```
+
+Creamos el dataset para usarlo en el modelo logístico.
+
+```{r}
+data_log <- data_transX1 %>% 
+  filter(qty_dot_directory != -1)#,
+         #time_domain_expiration != -1,
+         #domain_spf != -1)
+```
+
+
+```{r}
+table(data_log$phishing)
+```
+
+
+```{r}
+13772/(6347+13772)
+```
+
+
+
+```{r}
+corrplot(cor(data_log %>% select(-phishing)))
+```
+
+Hacemos la partición de los datos en train y test.
+
+```{r}
+set.seed(542)
+split <- initial_split(data_log, prop = 0.8, strata = data_log$phishing)
+train <- training(split)
+test <- testing(split)
+```
+
+Entrenamos el modelo logístico.
+
+```{r}
+logistic <- glm(phishing~., train, family='binomial')
+```
+
+Vemos el resumen del modelo logístico.
+
+```{r}
+summary(logistic)
+```
+
+Evaluamos el modelo en el set de **train**.
+
+```{r}
+confusionMatrix(as.factor(ifelse(logistic$fitted.values>0.5, 1, 0)), as.factor(train$phishing), positive = "1")
+```
+
+```{r}
+confusionMatrix(as.factor(ifelse(predict(logistic, newdata = test, type = 'response') > 0.5, 1, 0)), as.factor(test$phishing), positive = "1")
+```
+
+
+
+
+## transX2
+
+**Menos variables más observaciones**.
+
+Pueden servir como complemento.
+
+* qty_vowels_domain
+* qty_dot_domain
+
+Variables más potables:
+Ver qué variables se obtienen entrando y cuales no, 
+
+* qty_dot_url    
+* qty_hyphen_url  
+* qty_underline_url 
+* qty_slash_url
+* length_url    
+* domain_length
+* time_response   
+* domain_spf     
+* asn_ip 
+* time_domain_activation
+* time_domain_expiration
+* qty_ip_resolved
+* qty_nameservers
+* qty_mx_servers
+* ttl_hostname 
+* tls_ssl_certificate
+* qty_redirects
+
+```{r}
+data_transX2 <- data %>%
+  select(qty_vowels_domain,
+         qty_dot_domain,
+         qty_dot_url,
+         qty_hyphen_url,
+         qty_underline_url,
+         qty_slash_url,
+         length_url,
+         domain_length,
+         time_response, 
+         domain_spf, 
+         asn_ip, 
+         time_domain_activation,
+         time_domain_expiration,
+         qty_ip_resolved,
+         qty_nameservers,
+         qty_mx_servers,
+         ttl_hostname,
+         tls_ssl_certificate,
+         qty_redirects,
+         phishing)
+```
+
+
+```{r}
+dim(data_transX2)
+```
+
+```{r}
+createVarData(data_transX2)
+```
+
+Vemos de las variables que quedaron cuales tienen baja varianza.
+
+```{r}
+names(data_transX2)[nearZeroVar(data_transX2)]
+```
+
+```{r}
+data_transX2 %>%
+  mutate_all(as.factor) %>%
+  summary()
+```
+
+
+Eliminando todas las observaciones que tienen -1 obtenemos el siguiente dataset.
+
+```{r}
+dim(data_transX2 %>% filter(time_domain_expiration != -1,
+                            domain_spf != -1))
+```
+
+```{r}
+createVarData(data_transX2 %>% filter(time_domain_expiration != -1,
+                                      domain_spf != -1))
+```
+
+Creamos el dataset para usarlo en el modelo logístico.
+
+```{r}
+data_log2 <- data_transX2 %>% 
+  filter(time_domain_expiration != -1,
+         domain_spf != -1)
+```
+
+
+```{r}
+table(data_log2$phishing)
+```
+
+```{r}
+14035/(36351+ 14035)
+```
+
+
+
+```{r}
+corrplot(cor(data_log2 %>% select(-phishing)))
+```
+
+Hacemos la partición de los datos en train y test.
+
+```{r}
+set.seed(542)
+split <- initial_split(data_log2, prop = 0.8, strata = data_log2$phishing)
+train <- training(split)
+test <- testing(split)
+```
+
+Entrenamos el modelo logístico.
+
+```{r}
+logistic <- glm(phishing~., train, family='binomial')
+```
+
+Vemos el resumen del modelo logístico.
+
+```{r}
+summary(logistic)
+```
+
+Evaluamos el modelo en el set de **train**.
+
+```{r}
+confusionMatrix(as.factor(ifelse(logistic$fitted.values>0.5, 1, 0)), as.factor(train$phishing), positive = "1")
+```
+
+
+
+
+```{r}
+confusionMatrix(as.factor(ifelse(predict(logistic, newdata = test, type = 'response') > 0.5, 1, 0)), as.factor(test$phishing), positive = "1")
+```
+
+
+
+```{r}
+var.out<-setdiff(names(data),nzv_vars)
+data_clean <- data[var.out]
+```
+
+COMENZAMOS A LIMPIAR EL DATASET EN FUNCION DE LO DESARROLLADO ANTERIORMENTE
+
+1° Removemos las que solo tienen un valor único
+```{r}
+var.in <-  var_df %>%
+  filter(uniques==1)%>%
+  select(Variable)
+
+data_clean <- data[!names(data) %in% var.in[[1]] ]
+```
+
+Analizamos cuales tienen la mayor cantidad de -1 graficamente para elegir que variabels descartar en base a esto 
+```{r}
+var_df2 <- createVarData(data_clean)
+var_df2
+
+p<-ggplot(data=var_df2, aes(x=reorder(Variable, NAs), y=NAs)) +
+  geom_bar(stat="identity")+
+  coord_flip()
+p
+```
+
+
+
+
+
+
+
+
+

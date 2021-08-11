@@ -1,0 +1,44 @@
+---
+title: "Untitled"
+output: html_document
+---
+```{r}
+rm(list=ls())
+library(tidyverse)
+library(readr)
+```
+
+```{r}
+#importo los datasets
+dat <- read_csv("../Datasets/phishing_site_urls.csv")
+veri <- read_csv("../Datasets/verified_online.csv")
+Dataset_Phishing_1a5 <- read_csv("WebScraping/01.Prueba Phishtank/Dataset_Phishing_1a5.csv")
+View(Dataset_Phishing_1a5)
+```
+
+```{r}
+prueba1<-data.frame(veri$url,veri$verified)
+colnames(prueba1)[1]<-"url"
+colnames(prueba1)[2]<-"verified"
+prueba2<-data.frame(dat$URL,dat$Label)
+colnames(prueba2)[1]<-"url"
+colnames(prueba2)[2]<-"verified"
+newdf<-rbind(prueba1,prueba2)
+newdf<- mutate (newdf,verified_phish=ifelse(newdf$verified=="yes" | newdf$verified=="bad","yes","no"))
+str_remove_all(newdf$url, "[']")
+```
+
+```{r}
+#creo variables binarias si tienen https/ www para despues separar el link en dominio..
+newdf$url<-str_remove_all(newdf$url, "[']")
+newdf<-mutate(newdf,has_https=ifelse(substr(newdf$url,1,5)=="https",1,0))
+newdf<-mutate(newdf,has_http=ifelse(substr(newdf$url,1,5)=="http:",1,0))
+
+newdf<-mutate(newdf,urlclean=ifelse(has_https==1,substr(newdf$url,9,nchar(newdf$url)),newdf$url))
+newdf<-mutate(newdf,urlclean=ifelse(has_http==1,substr(newdf$url,8,nchar(newdf$url)),newdf$urlclean))
+newdf<-mutate(newdf,has_www=ifelse(substr(newdf$urlclean,1,4)=="www.",1,0))
+newdf<-mutate(newdf,has_wwwnstd=ifelse(substr(newdf$urlclean,1,3)=="www" & has_www==0,1,0))
+table(newdf$has_wwwnstd,newdf$verified_phish)
+```
+
+

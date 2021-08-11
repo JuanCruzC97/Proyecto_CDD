@@ -1,0 +1,20 @@
+---
+title: "prueba tables"
+output: html_document
+---
+
+```{r}
+table(data$phishing)
+```
+```{r}
+table(data$phishing,data$params_dummy)
+data$params_dummy = ifelse(data$params_length == -1, 0, 1)
+data$file_dummy = ifelse(data$file_length == -1, 0, 1)
+data$directory_dummy = ifelse(data$directory_length == -1, 0, 1)
+```
+
+```{r}
+table(data$phishing,data$params_dummy)
+table(data$phishing,data$file_dummy)
+table(data$phishing,data$directory_dummy)
+```

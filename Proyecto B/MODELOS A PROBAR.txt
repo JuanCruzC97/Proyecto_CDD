@@ -1,0 +1,53 @@
+ENTENDER LOS DATOS:
+
+	0. Entender todas las variables (principalmente las finales)
+	1. Entender cómo fue generado el dataset (faltantes de urls dudosos).
+	2. Elegir mejor approach:
+		a. Usar dataset con variables generadas
+		b. Usar dataset con URLs para generar analisis propio y variables propias.
+
+PREPARACIÓN DE DATOS: 
+
+	1. Borrar duplicados 
+	2. Borrar variables que tengan solo un unico valor [LISTO]
+	3. Elegir corte de cantidad de -1 aceptables 
+	4. Definir que variables entran en el analisis  
+	5. Fijarse de las variables replicables, cuantas podemos construir nosotros desde un dataset de URL´s
+
+CREACION DE VARIABLES:
+
+	* Variables dummy según composición del URL
+
+
+ANALISIS EXPLORATORIO: 
+	
+	* Árbol de Clasificación (variables importantes)
+	* Análisis de Correlaciones
+	* PCA (Ver dimensiones principales y plotear)
+	* Clustering (para ver si encontramos algo)
+
+
+
+PREDICCIÓN: 
+
+Modelos Regresión:
+	Regresion logística
+	Regresion logística Ridge 
+	Regresion logística Lasso 
+	Regresion logística ElasticNet (regularizacion mas ratio)
+
+Modelos KNN:
+	KNN (k)
+	
+Modelos SVM:
+	SVM Lineal (C)
+	SVM Kernel Poly (C, degree)
+	SVM Radial (C, gamma)
+	
+Modelos Árboles:
+	Árbol de Clasificación
+	Random Forest (muchos) 
+	Modelos Boost
+
+
+
