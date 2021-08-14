@@ -1,8 +1,12 @@
 Este txt sirve para ir marcando los pasos de trabajo, cosas que hay que hacer o ya están completadas y también ideas y comentarios.
+. [Listo] Indica que ya está hecho
+. !![FALTA]!! Indica que falta hacer
+. # Indica una pregunta o comentario
 
 1. Scraping
 
 Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline). Además tenemos las 10.000 observaciones VALID directas del csv de phishtank.
+# ¿Puede servir incluir una cierta cantidad de observaciones TOP aleatorias dentro del set de datos?
 
 2. Preparación de datos
 
@@ -41,6 +45,7 @@ Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline
       . Cantidad de vocales, consonantes y números en el dominio. [Listo]
     * Distancias
       !![FALTA]!! Generar y analizar estas variables.
-      
+     
+    * Variables creadas por uso de character-level embedings
   
 
