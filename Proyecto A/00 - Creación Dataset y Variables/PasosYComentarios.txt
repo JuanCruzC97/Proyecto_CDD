@@ -1,1 +1,46 @@
 Este txt sirve para ir marcando los pasos de trabajo, cosas que hay que hacer o ya están completadas y también ideas y comentarios.
+
+1. Scraping
+
+Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline). Además tenemos las 10.000 observaciones VALID directas del csv de phishtank.
+
+2. Preparación de datos
+
+  1. En primer lugar podemos descomponer los URLs en sus subcomponentes.
+  
+  URL = http://www.primer.ejemplo.com.ar/path
+  scheme = http
+  domain_complete = www.primer.ejemplo.com.ar
+    suffix = com.ar
+    domain = ejemplo
+    subdominio = www.primer
+    domain_subdomain = www.primer.ejemplo
+  path = /path
+  
+  * Eliminamos las observaciones con schemes diferentes a http o https (6)
+  * De todos los subdominios eliminamos las porciones 'www' y 'www.' por no aportar al url.
+  
+  !![FALTA]!!
+  * REVISAR URLs DULICADOS
+  * REVISAR DOMINIOS COMPLETOS DUPLICADOS
+  Evaluar qué hacer cuando hay muchos repetidos.
+  
+  2. Creación de Variables
+    * Scheme
+      . Variable categórica con el scheme. [Listo]
+    * Suffix
+      # ¿Buscar lista de sufijos reconocidos? Pueden sacarse de Top URLs?
+      . Variable categórica con suffix principales y amalgamando el resto en otros. [Listo]
+      . Variable del largo del sufijo. [Listo]
+    * Domain_Subdomain
+      . Largo del Domain_Subdomain. [Listo]
+      . Largo del Domain (o porcentaje de domain en domain_subdomain). [Listo]
+      . Variable categórica con Dominio = IP (usando la variable suffix). [Listo]
+      . Cantidad de ciertos dígitos (. - _) en el dominio [Probar más caracteres]
+        # Gran cantidad con nula varianza.
+      . Cantidad de vocales, consonantes y números en el dominio. [Listo]
+    * Distancias
+      !![FALTA]!! Generar y analizar estas variables.
+      
+  
+
