@@ -47,5 +47,11 @@ Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline
       !![FALTA]!! Generar y analizar estas variables.
      
     * Variables creadas por uso de character-level embedings
-  
-
+ 
+    * [PENDIENTE]	Agregar distancias con microsoft, blogspot, onedrive , payment, lista de bancos (hsbs, galicia 
+    * [PENDIENTE]	Agregar variables de distancias comparando solo con el domain ademas del subdomain y domain, se 
+			podria comparar tambien con el path
+			ejemplo link phishing( http://www.proehnndmsb.com/mazon/amazon)
+			Estuve viendo y hay varios que tienen amazon en el path
+    * [PENDIENTE]	Agregar URL length
+    * [PENDIENTE]	mismas variables para subodmain
