@@ -3,12 +3,12 @@ Este txt sirve para ir marcando los pasos de trabajo, cosas que hay que hacer o 
 . !![FALTA]!! Indica que falta hacer
 . # Indica una pregunta o comentario
 
-1. Scraping
+1. Scraping [Python]
 
 Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline). Además tenemos las 10.000 observaciones VALID directas del csv de phishtank.
 # ¿Puede servir incluir una cierta cantidad de observaciones TOP aleatorias dentro del set de datos?
 
-2. Preparación de datos
+2. Preparación de datos [Python]
 
   1. En primer lugar podemos descomponer los URLs en sus subcomponentes.
   
@@ -46,7 +46,6 @@ Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline
     * Distancias
       !![FALTA]!! Generar y analizar estas variables.
      
-    * Variables creadas por uso de character-level embedings
  
     * [PENDIENTE]	Agregar distancias con microsoft, blogspot, onedrive , payment, lista de bancos (hsbs, galicia 
     * [PENDIENTE]	Agregar variables de distancias comparando solo con el domain ademas del subdomain y domain, se 
@@ -55,3 +54,15 @@ Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline
 			Estuve viendo y hay varios que tienen amazon en el path
     * [PENDIENTE]	Agregar URL length
     * [PENDIENTE]	mismas variables para subodmain
+    
+    
+    * Variables creadas por uso de character-level embedings
+    
+    
+3. Análisis Exploratorio de Datos [R]
+    
+    
+4. Modelos [R]
+
+
+FINAL. Armar implementación que directamente puedas introducir el URL y que tire probabilidad de phishing.
