@@ -1,0 +1,24 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+rm(list=ls())
+library(readr)
+data <- read_csv("Datasets/RF_Test_results1.csv")
+```
+
+```{r}
+data$acerto=ifelse(data$phishing==data$Prediccion,1,0)
+data <- subset(data, select=c(120,121,123,1:119,122))
+```
+
+```{r}
+table(data$acerto)
+```
+```{r}
+data$domain_bit=ifelse(data$domain=="bit",1,0)
+table(data$domain_bit,data$phishing)
+```
+
