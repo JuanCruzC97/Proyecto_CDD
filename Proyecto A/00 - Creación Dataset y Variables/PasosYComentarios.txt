@@ -76,3 +76,4 @@ Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline
 
 
 FINAL. Armar implementación que directamente puedas introducir el URL y que tire probabilidad de phishing.
+* Armar bien las dummies a mano, no usar get_dummies porque genera diferencias de columnas.
