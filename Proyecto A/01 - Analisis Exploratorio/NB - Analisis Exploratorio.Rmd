@@ -21,7 +21,16 @@ library(readr)
 ```{r}
 getwd()
 data <- read_csv('../00 - Creación Dataset y Variables/Dataset_Modelos.csv')
+
 ```
+
+
+# Elimino columna suffix2 porque no es numerica y es solo de apoyo
+```{r}
+data$suffix2 <- NULL
+```
+
+
 
 # Funciones
 
@@ -131,7 +140,7 @@ names(data)
 ```
 
 ```{r}
-attr_summary(data$dom_n_guion, data$phishing, data, type = "continua")
+attr_summary(data$`metric_creditagrecole s.a.`, data$phishing, data, type = "continua")
 ```
 
 
@@ -139,14 +148,56 @@ attr_summary(data$dom_n_guion, data$phishing, data, type = "continua")
 attr_summary(data$suf_xyz, data$phishing, data, type = "categorica")
 ```
 ```{r}
-attr_summary(data$metric_amazon, data$phishing, data, type = "continua")
+corr_mat <- cor(data[30:48])
+library(corrplot)
+corrplot(corr_mat, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+det(corr_mat2)
+```
+
+```{r}
+col<- colorRampPalette(c("blue", "white", "red"))(20)
+heatmap(x = corr_mat, col = col, symm = TRUE)
+```
+
+```{r}
+corr_mat2 <- cor(data[10:29])
+corrplot(corr_mat2, type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45)
+```
+```{r}
+col<- colorRampPalette(c("blue", "white", "red"))(20)
+heatmap(x = corr_mat2, col = col, symm = TRUE)
+```
+
+```{r}
+library("FactoMineR")
+library("factoextra")
+df=data[10:19]
+df[,] <- lapply(data[,] , factor)
+res.mca <- MCA(df, graph = FALSE)
 ```
 
 
+#Prueba pca para variables contadoras
+```{r}
+library(psych)
+pcarot <- principal(df, nfactors=4, rotate="varimax",scores=T)
+pcarot
+pcarot$loadings
+plot(pcarot$values)
+fviz_screeplot(pcarot)
+```
+#Prueba pca para metricas
 
+```{r}
+df1=data[30:48]
+pcarot1 <- principal(df1, nfactors=5, rotate="varimax",scores=T)
+pcarot1
+pcarot1$loadings
+plot(pcarot1$values)
 
-
-
+```
 
 
 
