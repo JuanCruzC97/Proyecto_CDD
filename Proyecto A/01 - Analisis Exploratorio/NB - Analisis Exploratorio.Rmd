@@ -1,0 +1,26 @@
+---
+title: "Analisis Exploratorio"
+output: html_document
+---
+
+# Paquetes
+
+```{r Paquetes}
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(fastDummies)
+library(purrr)
+library(tidyr)
+library(readr)
+```
+
+
+# Dataset
+
+```{r}
+getwd()
+data <- read_csv('Proyecto A/00 - Creación Dataset y Variables/Dataset_Modelos.csv')
+```
+
+

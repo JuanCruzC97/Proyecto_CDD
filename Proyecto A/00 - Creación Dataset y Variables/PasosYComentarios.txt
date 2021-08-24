@@ -60,6 +60,7 @@ Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline
     
     
 3. Análisis Exploratorio de Datos [R]
+  * Armar funciones para graficar más rápido categóricas y continuas.
     
     
 4. Modelos [R]
