@@ -94,38 +94,98 @@ class DetectarPhishing:
         # Cuenta cantidad de caracteres diferentes
         data_urls['dom_car_dif'] = data_urls['domain_subdomain'].apply(set).apply(len)
 
-        # Dominio es IP
-        ip_dummies = pd.get_dummies(data_urls['suffix'] == '')
-        if ip_dummies.shape[1] == 2:
-            data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '', drop_first=True)
-        elif ip_dummies.shape[1] == 1:
-            if ip_dummies.columns[0] == False:
-                data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '').replace(1,0)
+        def dummy_ip(columna):
+            if columna == '':
+                return 1
             else:
-                data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '')
+                return 0
 
+        # Dominio es IP
+        data_urls['dom_ip'] = data_urls['suffix'].apply(dummy_ip)
+
+        #ip_dummies = pd.get_dummies(data_urls['suffix'] == '')
+        #if ip_dummies.shape[1] == 2:
+        #    data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '', drop_first=True)
+        #elif ip_dummies.shape[1] == 1:
+        #    if ip_dummies.columns[0] == False:
+        #        data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '').replace(1,0)
+        #    else:
+        #        data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '')
+            
         # Variable dummy Scheme
-        sch_dummies = pd.get_dummies(data_urls['scheme'], prefix='sch')
-        data_urls = pd.concat([data_urls, sch_dummies], axis = 1)
+        def dummy_http(columna):
+            if columna == 'http':
+                return 1
+            else:
+                return 0 
+        def dummy_https(columna):
+            if columna == 'https':
+                return 1
+            else:
+                return 0 
+        
+        data_urls['sch_http'] = data_urls['scheme'].apply(dummy_http)
+        data_urls['sch_https'] = data_urls['scheme'].apply(dummy_https)
+
+        #sch_dummies = pd.get_dummies(data_urls['scheme'], prefix='sch')
+        #data_urls = pd.concat([data_urls, sch_dummies], axis = 1)
 
         # Variables de Suffix
         data_urls['suf_len'] = data_urls['suffix'].str.len()
 
         # Creamos e imprimimos una lista con el top 5 de sufijos.
         top_suf_list = ['com', 'net', 'org', 'ru', 'xyz']
+        
+        def dummy_com(columna):
+            if columna == 'com':
+                return 1
+            else:
+                return 0        
+        def dummy_net(columna):
+            if columna == 'com':
+                return 1
+            else:
+                return 0
+        def dummy_org(columna):
+            if columna == 'com':
+                return 1
+            else:
+                return 0
+        def dummy_ru(columna):
+            if columna == 'com':
+                return 1
+            else:
+                return 0
+        def dummy_xyz(columna):
+            if columna == 'com':
+                return 1
+            else:
+                return 0
+        def dummy_other(columna):
+            if columna == 'other':
+                return 1
+            else:
+                return 0
+
         data_urls['suffix2'] = data_urls['suffix']
         # Asignamos categoría 'other' a todas las clases que no pertenezcan a top_suf_list.
         data_urls.loc[data_urls['suffix2'].isin(top_suf_list).apply(np.bitwise_not), 'suffix2'] = 'other'
         # Armamos las columnas dummy.
-        suf_dummies = pd.get_dummies(data_urls['suffix2'], prefix='suf')
-        data_urls = pd.concat([data_urls, suf_dummies], axis = 1)
+        data_urls['suf_com'] = data_urls['suffix2'].apply(dummy_com)
+        data_urls['suf_net'] = data_urls['suffix2'].apply(dummy_net)
+        data_urls['suf_org'] = data_urls['suffix2'].apply(dummy_org)
+        data_urls['suf_ru'] = data_urls['suffix2'].apply(dummy_ru)
+        data_urls['suf_xyz'] = data_urls['suffix2'].apply(dummy_xyz)
+        data_urls['suf_other'] = data_urls['suffix2'].apply(dummy_other)
+        
+        #suf_dummies = pd.get_dummies(data_urls['suffix2'], prefix='suf')
+        #data_urls = pd.concat([data_urls, suf_dummies], axis = 1)
 
         for domain in self.metric_domains:
             data_urls['metric_ds_'+domain] = data_urls['domain_subdomain'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
             data_urls['metric_d_'+domain] = data_urls['domain'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
             data_urls['metric_s_'+domain] = data_urls['subdomain'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
             data_urls['metric_p_'+domain] = data_urls['path'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
-
 
         self.data = data_urls.drop(['url', 'scheme', 'domain_complete', 'domain', 'subdomain','suffix', 'domain_subdomain', 'suffix2', 'path'], axis = 1)
         self.data.drop_duplicates(inplace = True)

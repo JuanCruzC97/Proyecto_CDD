@@ -3,9 +3,20 @@ title: "Notebook"
 output: html_notebook
 ---
 
+# Brian
+
+* Hola 
+* que
+* tal
+
 TOF
 
 https://markdown.es/sintaxis-markdown/
+
+
+```{r, echo=FALSE}
+attr_summary(data$dom_car_dif, data$phishing, data)
+```
 
 
 This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 

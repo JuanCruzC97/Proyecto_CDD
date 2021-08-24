@@ -1,0 +1,77 @@
+---
+title: "NB - Tuneo Modelos"
+output: html_document
+---
+
+https://topepo.github.io/caret/index.html
+https://www.cienciadedatos.net/documentos/41_machine_learning_con_r_y_caret
+
+```{r}
+library(caret)
+```
+
+```{r}
+data_model <- data %>%
+  select(-X1, 
+         -url, 
+         -scheme, 
+         -domain_complete, 
+         -domain, 
+         -subdomain, 
+         -suffix, 
+         -domain_subdomain, 
+         -suffix2,
+         -`metric_creditagrecole s.a.`)
+```
+
+```{r}
+names(data_model)
+```
+
+
+```{r}
+k = 5
+CV_folds <- createFolds(data_model$phishing, k = k, list = TRUE)
+```
+
+```{r}
+resample_method <- trainControl(method = "cv", 
+                                number = 10,
+				summaryFunction = twoClassSummary,
+				classProbs = TRUE, # IMPORTANTE! 
+                                verboseIter = TRUE, 
+                                returnData = TRUE, 
+                                returnResamp = "final", 
+                                savePredictions = "final")
+
+resample_method <- trainControl(method = "cv", 
+                                number = 3, 
+                                verboseIter = TRUE, 
+                                returnData = TRUE, 
+                                returnResamp = "final", 
+                                savePredictions = "final")
+```
+
+
+```{r}
+ridge_grid <- expand.grid(alpha = 0,
+                          lambda = seq(0, 0.005, 0.001))
+dim(ridge_grid)
+head(ridge_grid)
+```
+
+```{r}
+ridge <- train(as.factor(phishing)~., 
+               data = data_model, 
+               method = "glmnet", 
+               trControl = resample_method,
+               verbose = TRUE,
+               tuneGrid = ridge_grid,
+               preProcess = c("center", "scale"),
+               metric = "Accuracy")
+```
+
+
+
+
+
