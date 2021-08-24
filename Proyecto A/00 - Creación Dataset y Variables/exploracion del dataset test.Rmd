@@ -9,11 +9,14 @@ library(readr)
 library(dplyr)
 
 data <- read_csv("Datasets/RF_Test_results.csv")
+data <- read_csv("Datasets/RF_Train_results.csv")
 ```
 
 ```{r}
 data$acerto=ifelse(data$phishing==data$Prediccion,1,0)
 data <- subset(data, select=c((ncol(data)-3):ncol(data),1:(ncol(data)-4)))
+length(unique(data$domain_complete))
+
 ```
 
 
@@ -22,7 +25,7 @@ data$domain_bit=ifelse(data$domain=="bit",1,0)
 print("tabla, domain bit, phishing")
 table(data$domain_bit,data$phishing)
 print("tabla url length, phishing")
-table(data$metric_d_amazon,data$phishing,data$Prediccion)
+table(data$metric_s_amazon,data$phishing,data$Prediccion)
 data <- data %>%
   mutate(sisi=ifelse(phishing==1 & Prediccion==1,1,0),
   nono=ifelse(phishing==0 & Prediccion==0,1,0))
@@ -30,5 +33,7 @@ table(data$metric_d_google,data$phishing)
 ```
 ```{r}
 names(data)
+
+table(data$suffix,data$phishing)
 ```
 
