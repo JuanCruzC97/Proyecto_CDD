@@ -1,0 +1,12 @@
+Con buenos histogramas o boxplots:
+-Metric_Amazon
+-dom_len_tot
+-dom_can_diff
+-suf_xyz
+
+Algunas de las que entregan poca informacion al menos desde el histograma:
+-suf_com
+-metric_wikipedia
+-metric_baidu
+-metric_creditapecole s.a.
+-metric_onedrive
