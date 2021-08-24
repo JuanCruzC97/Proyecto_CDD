@@ -32,6 +32,7 @@ Ya scrapeamos 30.000 observaciones INVALID y 20.000 observaciones VALID (offline
   2. Creación de Variables
     * Scheme
       . Variable categórica con el scheme. [Listo]
+      [FALTA] Pensar si tiene sentido incluirla.
     * Suffix
       # ¿Buscar lista de sufijos reconocidos? Pueden sacarse de Top URLs?
       . Variable categórica con suffix principales y amalgamando el resto en otros. [Listo]
