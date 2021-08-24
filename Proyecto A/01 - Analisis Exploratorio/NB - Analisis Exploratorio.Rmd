@@ -20,7 +20,7 @@ library(readr)
 
 ```{r}
 getwd()
-data <- read_csv('Proyecto A/00 - Creación Dataset y Variables/Dataset_Modelos.csv')
+data <- read_csv('../00 - Creación Dataset y Variables/Dataset_Modelos.csv')
 ```
 
 # Funciones
@@ -131,14 +131,16 @@ names(data)
 ```
 
 ```{r}
-attr_summary(data$metric_amazon, data$phishing, data, type = "continua")
+attr_summary(data$dom_n_guion, data$phishing, data, type = "continua")
 ```
 
 
 ```{r}
 attr_summary(data$suf_xyz, data$phishing, data, type = "categorica")
 ```
-
+```{r}
+attr_summary(data$metric_amazon, data$phishing, data, type = "continua")
+```
 
 
 
