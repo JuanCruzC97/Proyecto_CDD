@@ -187,8 +187,11 @@ class DetectarPhishing:
             data_urls['metric_s_'+domain] = data_urls['subdomain'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
             data_urls['metric_p_'+domain] = data_urls['path'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
 
-        self.data = data_urls.drop(['url', 'scheme', 'domain_complete', 'domain', 'subdomain','suffix', 'domain_subdomain', 'suffix2', 'path'], axis = 1)
-        self.data.drop_duplicates(inplace = True)
+
+        self.data = data_urls.copy()
+        self.data.drop_duplicates(subset=['domain_complete'], inplace = True)
+        self.data.drop(['url', 'scheme', 'domain_complete', 'domain', 'subdomain','suffix', 'domain_subdomain', 'suffix2', 'path'], axis = 1, inplace = True)
+        return self.data
 
     def obtenerDataProcesada(self):
         return self.data
