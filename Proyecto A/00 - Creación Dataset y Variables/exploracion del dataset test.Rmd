@@ -9,31 +9,41 @@ library(readr)
 library(dplyr)
 
 data <- read_csv("Datasets/RF_Test_results.csv")
-data <- read_csv("Datasets/RF_Train_results.csv")
 ```
 
 ```{r}
 data$acerto=ifelse(data$phishing==data$Prediccion,1,0)
 data <- subset(data, select=c((ncol(data)-3):ncol(data),1:(ncol(data)-4)))
-length(unique(data$domain_complete))
-
+data <- data %>%
+  mutate(sisi=ifelse(phishing==1 & Prediccion==1,1,0),
+  nono=ifelse(phishing==0 & Prediccion==0,1,0))
 ```
 
+```{r}
+aux<-subset(data,select=c(1:4,6,198:236))
+View(aux)
+```
 
 ```{r}
+table(data$phishing,data$sisi,data$phishing)
+ail(table(aux$metric_google,aux$acerto),20)
 data$domain_bit=ifelse(data$domain=="bit",1,0)
 print("tabla, domain bit, phishing")
 table(data$domain_bit,data$phishing)
 print("tabla url length, phishing")
-table(data$metric_s_amazon,data$phishing,data$Prediccion)
-data <- data %>%
-  mutate(sisi=ifelse(phishing==1 & Prediccion==1,1,0),
-  nono=ifelse(phishing==0 & Prediccion==0,1,0))
-table(data$metric_d_google,data$phishing)
+table(data$metric_d_amazon,data$acerto)
+
+table(data$metric_s_google,data$acerto)
+print("tabla scheme, es fishing y predice bien")
+a=table(data$scheme,data$acerto)
+a
+a[1,2]/(a[1,2]+a[1,1])
+a[2,2]/(a[2,2]+a[2,1])
+table(data$dom_ip,data$acerto)
 ```
 ```{r}
-names(data)
-
-table(data$suffix,data$phishing)
+data %>% select(suffix2, phishing, Prediccion )%>%  
+  group_by(suffix2,phishing,Prediccion) %>% 
+    summarise(n())
 ```
 
