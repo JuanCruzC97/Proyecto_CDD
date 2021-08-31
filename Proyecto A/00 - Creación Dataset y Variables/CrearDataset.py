@@ -10,26 +10,25 @@ class CrearDataset:
         self.modelo = 0
 
         self.metric_domains = [
-            'amazon', 
-            'instagram', 
-            'google', 
-            'whatsapp',  
+            'amazon',
+            'instagram',
+            'google',
+            'whatsapp',
             'twitter',
             'facebook',
-            'yahoo', 
+            'yahoo',
             'wikipedia',
             'baidu',
-            'paypal', 
-            'mail', 
+            'paypal',
+            'mail',
             'sfexpress' ,
             'onedrive',
-            'excel', 
-            'square', 
-            'mail', 
-            'office365', 
-            'irs', 
-            'tencent', 
-            'creditagrecole s.a.',
+            'excel',
+            'square',
+            'mail',
+            'office365',
+            'irs',
+            'tencent',
             'microsoft',
             'blogspot',
             'onedrive',
@@ -43,13 +42,17 @@ class CrearDataset:
             'rakuten',
             'steam',
             'olx',
-            'drive', 
-            'auth', 
-            'webmail', 
-            'free', 
-            'service', 
-            'account']
-    
+            'drive',
+            'auth',
+            'webmail',
+            'free',
+            'service',
+            'account',
+            'docs',
+            'netflix',
+            'url',
+            'site']
+
         print('Instancia del detector fue creada')
 
     def obtenerMetricDomains(self):
@@ -108,7 +111,7 @@ class CrearDataset:
                 return 0
 
         # Dominio es IP
-        data_urls['dom_ip'] = data_urls['suffix'].apply(dummy_ip)
+        data_urls['dom_ip'] = data_urls['suffix'].apply(lambda x : 1 if x == '' else 0)
 
         #ip_dummies = pd.get_dummies(data_urls['suffix'] == '')
         #if ip_dummies.shape[1] == 2:
@@ -118,19 +121,19 @@ class CrearDataset:
         #        data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '').replace(1,0)
         #    else:
         #        data_urls['dom_ip'] = pd.get_dummies(data_urls['suffix'] == '')
-            
+
         # Variable dummy Scheme
         def dummy_http(columna):
             if columna == 'http':
                 return 1
             else:
-                return 0 
+                return 0
         def dummy_https(columna):
             if columna == 'https':
                 return 1
             else:
-                return 0 
-        
+                return 0
+
         #data_urls['sch_http'] = data_urls['scheme'].apply(dummy_http)
         #data_urls['sch_https'] = data_urls['scheme'].apply(dummy_https)
 
@@ -141,13 +144,13 @@ class CrearDataset:
         data_urls['suf_len'] = data_urls['suffix'].str.len()
 
         # Creamos e imprimimos una lista con el top 5 de sufijos.
-        top_suf_list = ['com', 'net', 'org', 'ru', 'xyz']
-        
+        top_suf_list = ['com','net','org','ru','xyz','com.br','cn','de','info','co.uk','tk','co','top','fr','biz','shop','ly','me']
+
         def dummy_com(columna):
             if columna == 'com':
                 return 1
             else:
-                return 0        
+                return 0
         def dummy_net(columna):
             if columna == 'com':
                 return 1
@@ -184,7 +187,7 @@ class CrearDataset:
         data_urls['suf_ru'] = data_urls['suffix2'].apply(dummy_ru)
         data_urls['suf_xyz'] = data_urls['suffix2'].apply(dummy_xyz)
         data_urls['suf_other'] = data_urls['suffix2'].apply(dummy_other)
-        
+
         #suf_dummies = pd.get_dummies(data_urls['suffix2'], prefix='suf')
         #data_urls = pd.concat([data_urls, suf_dummies], axis = 1)
 
@@ -194,9 +197,9 @@ class CrearDataset:
             data_urls['metric_s_'+domain] = data_urls['subdomain'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
             data_urls['metric_p_'+domain] = data_urls['path'].apply(lambda x: jellyfish.jaro_winkler(x, domain))
 
-        
+
         self.data = data_urls.copy()
-        #self.data.drop_duplicates(subset=['domain_complete', 'suffix'], inplace = True)
+        self.data.drop_duplicates(subset=['domain_complete', 'suffix'], inplace = True)
         self.data.drop(['url', 'scheme', 'domain_complete', 'domain', 'subdomain','suffix', 'domain_subdomain', 'suffix2', 'path'], axis = 1, inplace = True)
         #self.data.drop_duplicates(inplace = True)
         return self.data
