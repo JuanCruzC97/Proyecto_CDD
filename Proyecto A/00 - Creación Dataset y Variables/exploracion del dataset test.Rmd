@@ -8,7 +8,8 @@ rm(list=ls())
 library(readr)
 library(dplyr)
 
-data <- read_csv("Datasets/RF_Test_results.csv")
+data <- read_csv("./Dataset_Modelos.csv")
+colnames(data)
 ```
 
 ```{r}
@@ -25,6 +26,10 @@ View(aux)
 ```
 
 ```{r}
+table(data$path_n_guion)
+
+
+
 table(data$phishing,data$sisi,data$phishing)
 ail(table(aux$metric_google,aux$acerto),20)
 data$domain_bit=ifelse(data$domain=="bit",1,0)
