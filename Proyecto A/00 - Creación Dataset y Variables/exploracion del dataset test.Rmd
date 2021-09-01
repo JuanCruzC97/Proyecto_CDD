@@ -11,6 +11,12 @@ library(dplyr)
 data <- read_csv("./Dataset_Modelos.csv")
 colnames(data)
 ```
+```{r}
+
+
+tbl <- table(data$suffix,data$phishing)
+tablatbl
+```
 
 ```{r}
 data$acerto=ifelse(data$phishing==data$Prediccion,1,0)

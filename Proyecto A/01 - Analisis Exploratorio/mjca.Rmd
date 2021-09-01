@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+# Establezco el directorio de trabajo
+
+```{r}
+rm(list=ls())
+dir=getwd()
+setwd()
+data <- read_csv("./Dataset_Modelos.csv")
+```
+
+# Cargo la tabla con los datos
+tabDesercion <- read.table("CAdesercion.csv",sep=",",header=T)
+
+# Visualizo los primeros seis registros de la tabla
+head(tabDesercion)
+
+# Cargo la librería para el Análisis de Correspondencia
+library(ca)
+library(ggplot2)
+
+# Corro el análisis de correspondencia múltiple
+corresp <- mjca(obj = tabDesercion, 
+                nd = NA, 
+                lambda = "indicator", 
+                supco
