@@ -7,8 +7,8 @@ output: html_document
 rm(list=ls())
 library(readr)
 library(dplyr)
-
-data <- read_csv("./Dataset_Modelos.csv")
+getwd()
+data <- read_csv("Dataset_Modelos.csv")
 colnames(data)
 ```
 ```{r}

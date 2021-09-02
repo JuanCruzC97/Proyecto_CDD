@@ -8,8 +8,8 @@ library(car)      #vif
 dat <- read_excel("Discrim01 spam.xlsx")
 dat <- read_csv("Dataset_Modelos.csv")
 View(dat)
-
-
+dir=dirname('../'+rstudioapi::getActiveDocumentContext()$path)
+setwd()
 
 # Functions
 accu <- function(yp,yT) {ct=table(yp,yT);x=(ct[1,1]+ct[2,2])/sum(ct);return(x)}
