@@ -13,6 +13,8 @@ library(fastDummies)
 library(purrr)
 library(tidyr)
 library(readr)
+library(FactoMineR)
+library(factoextra)
 ```
 
 
@@ -169,11 +171,110 @@ names(data)
 attr_summary(data$metric_ds_amazon, data$phishing, data, type = "continua")
 ```
 
+```{r}
+names(data)
+```
+
+
+```{r}
+attr_summary(data$dom_cons, data$phishing, data, type = "continua")
+```
 
 ```{r}
 attr_summary(data$suf_xyz, data$phishing, data, type = "categorica")
 ```
 
+
+# PCA
+
+PCA de las variables métricas.
+
+```{r}
+pca <- PCA(data[,55:234], scale.unit = FALSE, ncp = 50)
+```
+
+```{r}
+summary(pca)
+```
+
+```{r}
+pca$eig
+```
+
+```{r}
+fviz_screeplot(pca)
+```
+
+
+```{r, fig.height=25, fig.width=25}
+as.data.frame(pca$var$cor[,1:10]) %>%
+  mutate(orig_var = rownames(pca$var$cor)) %>%
+  gather(key = "new_vars", value = "Corr", -orig_var) %>%
+  left_join(data.frame("new_vars" = paste0("Dim.", seq(1,10)),
+              "Contrib" = pca$eig[,1]),
+            by = "new_vars") %>%
+  ggplot(aes(x = reorder(new_vars, -Contrib), y = orig_var, fill = Corr, label = round(Corr,2)))+
+  geom_tile()+
+  geom_text(alpha = 0.7, size = 3.5)+
+  scale_fill_continuous(type = "viridis")+
+  labs(title = "Correlation Heatmap",
+       subtitle = "Correlaciones entre variables originales y dimensiones principales",
+       x = "PCA Dimensions",
+       y = "Original Dimensions",
+       fill = "Correlation")+
+  theme_light()
+```
+
+```{r}
+as.data.frame(pca$ind$coord) %>%
+  mutate(Phishing = data$phishing) %>%
+  ggplot(aes(x = `Dim.2`, y = `Dim.4`, color = as.factor(Phishing)))+
+  geom_point(alpha = 0.1)
+```
+
+```{r}
+pca2 <- PCA(scale(data_numeric[,2:25]), scale.unit = FALSE, ncp = 30)
+```
+
+```{r}
+pca2$eig
+```
+
+
+```{r}
+fviz_screeplot(pca2)
+```
+
+
+```{r, fig.height=25, fig.width=25}
+as.data.frame(pca2$var$cor) %>%
+  mutate(orig_var = rownames(pca2$var$cor)) %>%
+  gather(key = "new_vars", value = "Corr", -orig_var) %>%
+  left_join(data.frame("new_vars" = paste0("Dim.", seq(1,10)),
+              "Contrib" = pca2$eig[,1]),
+            by = "new_vars") %>%
+  ggplot(aes(x = reorder(new_vars, -Contrib), y = orig_var, fill = Corr, label = round(Corr,2)))+
+  geom_tile()+
+  geom_text(alpha = 0.7, size = 3.5)+
+  scale_fill_continuous(type = "viridis")+
+  labs(title = "Correlation Heatmap",
+       subtitle = "Correlaciones entre variables originales y dimensiones principales",
+       x = "PCA Dimensions",
+       y = "Original Dimensions",
+       fill = "Correlation")+
+  theme_light()
+```
+
+```{r}
+as.data.frame(pca2$ind$coord) %>%
+  mutate(Phishing = data$phishing) %>%
+  ggplot(aes(x = `Dim.2`, y = `Dim.3`, color = as.factor(Phishing)))+
+  geom_point(alpha = 0.1)
+```
+
+
+
+# Matriz Correlacion
 
 ```{r}
 corr_mat <- cor(data[30:48])
