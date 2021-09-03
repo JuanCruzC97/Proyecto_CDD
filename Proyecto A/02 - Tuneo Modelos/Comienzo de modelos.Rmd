@@ -62,7 +62,7 @@ Regresión logistica:
 
 ```{r}
 default_glm_mod = train(
-  as.factor(phishing)~.,
+  factor(phishing)~.,
   train,
   trControl = trainControl(method = "cv", number = 5),
   method = "glm",
@@ -72,6 +72,12 @@ default_glm_mod = train(
 ```
 
 ```{r}
-sum(is.na(df))
+default_glm_mod
+default_glm_mod$results
+x_test <- test[,2:224]
+y_test <- test[,1]
+predictions <- predict(default_glm_mod, x_test)
+confusionMatrix(predictions, factor(y_test))
+                
 ```
 
