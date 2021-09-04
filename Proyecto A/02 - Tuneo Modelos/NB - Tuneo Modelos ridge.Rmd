@@ -47,7 +47,7 @@ df <- data %>%
 
 
 ```{r}
-names(data_model)
+names(df)
 ```
 
 Partimos el dataset en partición de Train y Test. El objeto *train_index* tendrá el índice de el Train set.
@@ -95,55 +95,58 @@ resample_method <- trainControl(method = "cv",
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-ridge_grid <- expand.grid(alpha = 0,
-                          lambda = seq(0.01, 0.04, 0.001))
+lasso_grid <- expand.grid(alpha = 1,
+                          lambda = seq(0.0001 , 0.0002 , 0.00001))
 
 
-dim(ridge_grid)
-head(ridge_grid)
+dim(lasso_grid)
+head(lasso_grid)
 ```
 
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 
 ```{r}
-ridge <- train(as.factor(phishing)~., 
+lasso <- train(as.factor(phishing)~., 
                data = train, 
                method = "glmnet", 
                trControl = resample_method,
                verbose = TRUE,
-               tuneGrid = ridge_grid,
+               tuneGrid = lasso_grid,
                #tuneLength = 50,
                preProcess = c("center", "scale"),
                metric = "ROC")
 ```
 
 Imprimimos los resultados obtenidos por Cross-Validation.
-
 ```{r}
-ridge
-```
-```{r}
-plot(ridge, metric= "ROC")
-plot(ridge, metric= "Spec")#ES SENSITIVITY
-plot(ridge, metric= "Sens")#ES Specificity
+plot(lasso, metric= "ROC")
+plot(lasso, metric= "Spec")#ES SENSITIVITY
+plot(lasso, metric= "Sens")#ES Specificity
 ```
 
 ```{r}
-ridge$bestTune
+lasso
 ```
 
 ```{r}
-ridge$preProcess
+lasso$bestTune
+```
+
+```{r}
+lasso$preProcess
+```
+```{r}
+lasso$results
 ```
 
 
 
 ```{r}
-plot(ridge$finalModel, xvar = "lambda")
+plot(lasso$finalModel, xvar = "lambda")
 ```
 
 ```{r}
-ggplot(ridge$results, aes(x=lambda, y = Accuracy))+
+ggplot(lasso$results, aes(x=lambda, y = Spec))+
   geom_point()+
   geom_line()+
   expand_limits(y = c(0,1))+
@@ -159,9 +162,9 @@ dim(test)
 Matriz de Confusión del modelo entrenado con el set de Test.
 
 ```{r}
-confusionMatrix(data = as.factor(predict(ridge, test)),
+confusionMatrix(data = as.factor(predict(lasso, test)),
                 reference = as.factor(test$phishing),
-                positive = "1",
+                positive = "Phish",
                 mode = "everything")
 ```
 
@@ -170,15 +173,22 @@ confusionMatrix(data = as.factor(predict(ridge, test)),
 En esta parte guardamos los resultados de la optimización de hiperparámetros mediante Cross-Validation. La celda comentada sirve para crear el archivo csv por primera vez. Una vez creado dejarla comentada y correr solamente la última celda para incluir los nuevos resultados.
 
 **REEMPLAZAR EL NOMBRE DEL MODELO**
-
 ```{r}
-#write_csv(ridge$results, file = "Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
+getwd()
 ```
 
 ```{r}
-df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
-df_results <- rbind(df_results, ridge$results)
-write_csv(df_results, file = "Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
+#write_csv(lasso$results, file = 'lasso roc.csv')
+```
+
+```{r}
+df_results <- read_csv("lasso roc.csv")
+df_results <- rbind(df_results, lasso$results)
+write_csv(df_results, file = "lasso roc.csv")
+```
+```{r}
+df_results<-lasso$results
+write_csv(df_results, file = "lasso roc.csv",append = T)
 ```
 
 
