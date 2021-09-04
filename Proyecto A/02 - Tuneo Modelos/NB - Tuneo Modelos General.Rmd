@@ -58,6 +58,12 @@ train_index <- createDataPartition(y = df$phishing, times = 1, p = 0.80, list = 
 
 train <- df[train_index,]
 test <- df[-train_index,]
+
+train <- train %>%
+  mutate(phishing = factor(phishing, labels = c("NoPhish", "Phish")))
+test <- test %>%
+  mutate(phishing = factor(phishing, labels = c("NoPhish", "Phish")))
+
 #test1 <- df[-train_index,]
 
 #test_index <- createDataPartition(y = test1$phishing, times = 1, p = 0.5, list = FALSE)
@@ -75,10 +81,13 @@ CV_folds <- createFolds(train$phishing, k = k, list = TRUE)
 
 resample_method <- trainControl(method = "cv",
                                 number = k,
+                                classProbs = TRUE,
+                                summaryFunction = twoClassSummary,
                                 verboseIter = TRUE,
                                 returnData = TRUE,
                                 returnResamp = "final",
                                 savePredictions = "final",
+                                search = "grid",
                                 index = CV_folds)
 
 ```
@@ -103,8 +112,9 @@ ridge <- train(as.factor(phishing)~.,
                trControl = resample_method,
                verbose = TRUE,
                tuneGrid = ridge_grid,
+               #tuneLength = 50,
                preProcess = c("center", "scale"),
-               metric = "Accuracy")
+               metric = "ROC")
 ```
 
 Imprimimos los resultados obtenidos por Cross-Validation.
