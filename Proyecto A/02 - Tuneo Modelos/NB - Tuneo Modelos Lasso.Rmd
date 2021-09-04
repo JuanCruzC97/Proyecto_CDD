@@ -47,7 +47,7 @@ df <- data %>%
 
 
 ```{r}
-names(data_model)
+names(df)
 ```
 
 Partimos el dataset en partición de Train y Test. El objeto *train_index* tendrá el índice de el Train set.
@@ -58,12 +58,6 @@ train_index <- createDataPartition(y = df$phishing, times = 1, p = 0.80, list = 
 
 train <- df[train_index,]
 test <- df[-train_index,]
-
-train <- train %>%
-  mutate(phishing = factor(phishing, labels = c("NoPhish", "Phish")))
-test <- test %>%
-  mutate(phishing = factor(phishing, labels = c("NoPhish", "Phish")))
-
 #test1 <- df[-train_index,]
 
 #test_index <- createDataPartition(y = test1$phishing, times = 1, p = 0.5, list = FALSE)
@@ -76,18 +70,15 @@ Armamos los folds de Cross-Validation, usamos k = 5. El objeto *resample_method*
 
 ```{r}
 set.seed(53)
-k = 5
+k = 3
 CV_folds <- createFolds(train$phishing, k = k, list = TRUE)
 
 resample_method <- trainControl(method = "cv",
                                 number = k,
-                                classProbs = TRUE,
-                                summaryFunction = twoClassSummary,
                                 verboseIter = TRUE,
                                 returnData = TRUE,
                                 returnResamp = "final",
                                 savePredictions = "final",
-                                search = "grid",
                                 index = CV_folds)
 
 ```
@@ -95,50 +86,49 @@ resample_method <- trainControl(method = "cv",
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-ridge_grid <- expand.grid(alpha = 0,
-                          lambda = seq(0.01, 0.04, 0.001))
+lasso_grid <- expand.grid(alpha = 1,
+                          lambda = seq(0.01, 0.1, 0.01))
 
 
-dim(ridge_grid)
-head(ridge_grid)
+dim(lasso_grid)
+head(lasso_grid)
 ```
 
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 
 ```{r}
-ridge <- train(as.factor(phishing)~., 
+lasso <- train(as.factor(phishing)~., 
                data = train, 
                method = "glmnet", 
                trControl = resample_method,
                verbose = TRUE,
-               tuneGrid = ridge_grid,
-               #tuneLength = 50,
+               tuneGrid = lasso_grid,
                preProcess = c("center", "scale"),
-               metric = "ROC")
+               metric = "Accuracy")
 ```
 
 Imprimimos los resultados obtenidos por Cross-Validation.
 
 ```{r}
-ridge
+lasso
 ```
 
 ```{r}
-ridge$bestTune
+lasso$bestTune
 ```
 
 ```{r}
-ridge$preProcess
+lasso$preProcess
 ```
 
 
 
 ```{r}
-plot(ridge$finalModel, xvar = "lambda")
+plot(lasso$finalModel, xvar = "lambda")
 ```
 
 ```{r}
-ggplot(ridge$results, aes(x=lambda, y = Accuracy))+
+ggplot(lasso$results, aes(x=lambda, y = Accuracy))+
   geom_point()+
   geom_line()+
   expand_limits(y = c(0,1))+
@@ -154,7 +144,7 @@ dim(test)
 Matriz de Confusión del modelo entrenado con el set de Test.
 
 ```{r}
-confusionMatrix(data = as.factor(predict(ridge, test)),
+confusionMatrix(data = as.factor(predict(lasso, test)),
                 reference = as.factor(test$phishing),
                 positive = "1",
                 mode = "everything")
@@ -167,13 +157,13 @@ En esta parte guardamos los resultados de la optimización de hiperparámetros m
 **REEMPLAZAR EL NOMBRE DEL MODELO**
 
 ```{r}
-#write_csv(ridge$results, file = "Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
+#write_csv(lasso$results, file = "Proyecto A/02 - Tuneo Modelos/Logisticos/lasso/lasso.csv")
 ```
 
 ```{r}
-df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
-df_results <- rbind(df_results, ridge$results)
-write_csv(df_results, file = "Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
+df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/Logisticos/lasso/lasso.csv")
+df_results <- rbind(df_results, lasso$results)
+write_csv(df_results, file = "Proyecto A/02 - Tuneo Modelos/Logisticos/lasso/lasso.csv")
 ```
 
 
