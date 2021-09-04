@@ -49,7 +49,7 @@ df <- data %>%
 
 
 ```{r}
-names(df)
+names(data_model)
 ```
 
 Partimos el dataset en partición de Train y Test. El objeto *train_index* tendrá el índice de el Train set.
@@ -103,7 +103,7 @@ Corriendo esta celda se realiza Cross-Validation probando todas las combinacione
 ```{r}
 ridge <- train(as.factor(phishing)~., 
                data = train, 
-               method = "rf", 
+               method = "ranger", 
                trControl = resample_method,
                verbose = TRUE,
                tuneGrid = ridge_grid,
