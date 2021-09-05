@@ -111,9 +111,9 @@ gbm$results %>% arrange(desc(ROC))
 
 ```{r}
 gbm_grid <- expand.grid(n.trees = c(150),
-                        interaction.depth = c(10, ),
-                        shrinkage = c(0.16, 0.17, 0.18),
-                        n.minobsinnode = c(20,30))
+                        interaction.depth = c(16, 18),
+                        shrinkage = c(0.15, 0.16, 0.17),
+                        n.minobsinnode = c(20))
 
 
 dim(gbm_grid)
@@ -179,12 +179,14 @@ dim(test)
 
 Matriz de Confusión del modelo entrenado con el set de Test.
 
+
 ```{r}
 confusionMatrix(data = as.factor(predict(gbm, test)),
                 reference = as.factor(test$phishing),
                 positive = "Phish",
                 mode = "everything")
 ```
+
 
 # Guardar Resultados
 
