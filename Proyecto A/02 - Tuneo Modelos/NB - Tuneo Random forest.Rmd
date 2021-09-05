@@ -103,7 +103,7 @@ En esta parte armamos el dataset con los valores de los hiperparámetros que vam
 
 ```{r}
 ridge_grid <- expand.grid(
-                            mtry = seq(55,155,20),
+                            mtry = seq(30,70,20),
                             splitrule = "gini",
                             min.node.size = c(3, 5, 7))
 
@@ -143,11 +143,11 @@ ridge$preProcess
 
 
 ```{r}
-plot(ridge, xvar = "mtry")
+plot(ridge, xvar = "min.node.size")
 ```
 
 ```{r}
-ggplot(ridge$results, aes(x=min.node.size, y = Accuracy,color=as.factor(mtry)))+
+ggplot(df_results, aes(x=min.node.size, y = ROC,color=as.factor(mtry)))+
   geom_point()+
   geom_line()+
   #expand_limits(y = c(0,1))+
@@ -177,12 +177,11 @@ En esta parte guardamos los resultados de la optimización de hiperparámetros m
 **REEMPLAZAR EL NOMBRE DEL MODELO**
 
 ```{r}
-getwd()
-write_csv(ridge$results, file ="C:/Users/kiri/Documents/GitHub/Proyecto_CDD/Proyecto A/02 - Tuneo Modelos/Random Forest/Resultados_RFkiri.csv")
+write_csv(ridge$results, file ="C:/Users/kiri/Documents/GitHub/Proyecto_CDD/Proyecto A/02 - Tuneo Modelos/Random Forest/Resultados_RF.csv",append=T)
 ```
 
 ```{r}
-df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
+df_results <- read_csv("C:/Users/kiri/Documents/GitHub/Proyecto_CDD/Proyecto A/02 - Tuneo Modelos/Random Forest/Resultados_RF.csv")
 df_results <- rbind(df_results, ridge$results)
 write_csv(df_results, file = "Proyecto A/02 - Tuneo Modelos/Logisticos/Ridge/Ridge.csv")
 ```
