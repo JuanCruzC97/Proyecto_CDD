@@ -95,23 +95,23 @@ resample_method <- trainControl(method = "cv",
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-lasso_grid <- expand.grid(alpha = 1,
-                          lambda = seq(0.0001 , 0.0002 , 0.00001))
+ridge_grid <- expand.grid(alpha = 0,
+                          lambda = seq(0.02 , 0.03 , 0.0001))
 
 
-dim(lasso_grid)
-head(lasso_grid)
+dim(ridge_grid)
+head(ridge_grid)
 ```
 
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 
 ```{r}
-lasso <- train(as.factor(phishing)~., 
+ridge <- train(as.factor(phishing)~., 
                data = train, 
                method = "glmnet", 
                trControl = resample_method,
                verbose = TRUE,
-               tuneGrid = lasso_grid,
+               tuneGrid = ridge_grid,
                #tuneLength = 50,
                preProcess = c("center", "scale"),
                metric = "ROC")
@@ -119,34 +119,34 @@ lasso <- train(as.factor(phishing)~.,
 
 Imprimimos los resultados obtenidos por Cross-Validation.
 ```{r}
-plot(lasso, metric= "ROC")
-plot(lasso, metric= "Spec")#ES SENSITIVITY
-plot(lasso, metric= "Sens")#ES Specificity
+plot(ridge, metric= "ROC")
+plot(ridge, metric= "Spec")#ES SENSITIVITY
+plot(ridge, metric= "Sens")#ES Specificity
 ```
 
 ```{r}
-lasso
+ridge
 ```
 
 ```{r}
-lasso$bestTune
+ridge$bestTune
 ```
 
 ```{r}
-lasso$preProcess
+ridge$preProcess
 ```
 ```{r}
-lasso$results
+ridge$results
 ```
 
 
 
 ```{r}
-plot(lasso$finalModel, xvar = "lambda")
+plot(ridge$finalModel, xvar = "lambda")
 ```
 
 ```{r}
-ggplot(lasso$results, aes(x=lambda, y = Spec))+
+ggplot(ridge$results, aes(x=lambda, y = Spec))+
   geom_point()+
   geom_line()+
   expand_limits(y = c(0,1))+
@@ -162,7 +162,7 @@ dim(test)
 Matriz de Confusión del modelo entrenado con el set de Test.
 
 ```{r}
-confusionMatrix(data = as.factor(predict(lasso, test)),
+confusionMatrix(data = as.factor(predict(ridge, test)),
                 reference = as.factor(test$phishing),
                 positive = "Phish",
                 mode = "everything")
@@ -178,17 +178,17 @@ getwd()
 ```
 
 ```{r}
-#write_csv(lasso$results, file = 'lasso roc.csv')
+#write_csv(ridge$results, file = 'ridge roc.csv')
 ```
 
 ```{r}
-df_results <- read_csv("lasso roc.csv")
-df_results <- rbind(df_results, lasso$results)
-write_csv(df_results, file = "lasso roc.csv")
+df_results <- read_csv("ridge roc.csv")
+df_results <- rbind(df_results, ridge$results)
+write_csv(df_results, file = "ridge roc.csv")
 ```
 ```{r}
-df_results<-lasso$results
-write_csv(df_results, file = "lasso roc.csv",append = T)
+df_results<-ridge$results
+write_csv(df_results, file = "ridge roc.csv",append = T)
 ```
 
 
