@@ -110,9 +110,10 @@ gbm$results %>% arrange(desc(ROC))
 
 
 ```{r}
-gbm_grid <- expand.grid(n.trees = c(150),
-                        interaction.depth = c(16, 18),
-                        shrinkage = c(0.15, 0.16, 0.17),
+# Todavia no probadas estas combinaciones.
+gbm_grid <- expand.grid(n.trees = c(150, 200),
+                        interaction.depth = c(16, 18, 20),
+                        shrinkage = c(0.15, 0.16),
                         n.minobsinnode = c(20))
 
 
@@ -179,6 +180,13 @@ dim(test)
 
 Matriz de Confusión del modelo entrenado con el set de Test.
 
+```{r}
+confusionMatrix(data = as.factor(predict(gbm, train)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
 
 ```{r}
 confusionMatrix(data = as.factor(predict(gbm, test)),
@@ -203,5 +211,31 @@ df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
 df_results <- rbind(df_results, gbm$results)
 write_csv(df_results, file = "Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
 ```
+
+
+```{r}
+df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
+```
+
+
+
+```{r, fig.height=7, fig.width=10}
+df_results %>%
+  filter(ROC > 0.93) %>%
+  ggplot(aes(x = interaction.depth, y = ROC, color = as.factor(shrinkage), shape = as.factor(n.trees)))+
+  geom_point(size = 2)+
+  theme_bw()
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
