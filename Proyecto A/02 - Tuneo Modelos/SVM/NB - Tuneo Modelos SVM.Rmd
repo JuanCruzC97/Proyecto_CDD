@@ -6,9 +6,6 @@ output: html_document
 https://topepo.github.io/caret/index.html
 https://www.cienciadedatos.net/documentos/41_machine_learning_con_r_y_caret
 
-http://uc-r.github.io/gbm_regression
-
-
 # Paquetes
 
 ```{r}
@@ -26,7 +23,7 @@ data <- read_csv('Proyecto A/00 - Creación Dataset y Variables/Dataset_Modelos.
 
 ```{r}
 # Windows
-#data <- read_csv('../00 - Creación Dataset y Variables/Dataset_Modelos.csv')
+data <- read_csv('../00 - Creación Dataset y Variables/Dataset_Modelos.csv')
 ```
 
 Borramos las variables de caracteres.
@@ -56,7 +53,7 @@ names(data_model)
 Partimos el dataset en partición de Train y Test. El objeto *train_index* tendrá el índice de el Train set.
 
 ```{r}
-set.seed(45)
+set.seed(35)
 train_index <- createDataPartition(y = df$phishing, times = 1, p = 0.80, list = FALSE)
 
 train <- df[train_index,]
@@ -67,7 +64,6 @@ train <- train %>%
 test <- test %>%
   mutate(phishing = factor(phishing, labels = c("NoPhish", "Phish")))
 
-
 #test1 <- df[-train_index,]
 
 #test_index <- createDataPartition(y = test1$phishing, times = 1, p = 0.5, list = FALSE)
@@ -76,18 +72,12 @@ test <- test %>%
 #validation <- test1[-test_index,]
 ```
 
-```{r}
-train$phishing
-df$phishing[train_index]
-```
-
-
 Armamos los folds de Cross-Validation, usamos k = 5. El objeto *resample_method* tendrá toda la información de las particiones de Cross-Validation que realizamos.
 
 ```{r}
-set.seed(53)
+set.seed(35)
 k = 5
-CV_folds <- createFolds(train$phishing, k = k, list = TRUE)
+CV_folds <- createFolds(train2$phishing, k = k, list = TRUE)
 
 resample_method <- trainControl(method = "cv",
                                 number = k,
@@ -98,79 +88,74 @@ resample_method <- trainControl(method = "cv",
                                 returnResamp = "final",
                                 savePredictions = "final",
                                 search = "grid",
-                                index = CV_folds)
+                                index = CV_folds ) 
 
 ```
 
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-gbm$results %>% arrange(desc(ROC))
+C_range =    c(0.01,0.011,0.012,0.013,0.014,0.015)
+sigma_range =  c(0.005, 0.001,0.0025)
+
+SVC_grid <- expand.grid(C= C_range)
+
+
+dim(SVC_grid)
+View(SVC_grid)
 ```
 
-
+Reducimos el train set porque tarda demasiado.
 ```{r}
-# Todavia no probadas estas combinaciones.
-gbm_grid <- expand.grid(n.trees = c(150, 200),
-                        interaction.depth = c(16, 18, 20),
-                        shrinkage = c(0.15, 0.16),
-                        n.minobsinnode = c(20))
-
-
-dim(gbm_grid)
-head(gbm_grid)
+train_index2 <- createDataPartition(y = train$phishing, times = 1, p = 0.15, list = FALSE)
+train2 <- train[train_index2,]
 ```
-
 
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
-
 ```{r}
-gbm <- train(phishing~., 
-             data = train, 
-             method = "gbm", 
-             trControl = resample_method,
-             verbose = TRUE,
-             tuneGrid = gbm_grid,
-             #tuneLength = 50,
-             #preProcess = c("center", "scale"),
-             metric = "ROC")
+SVC <- train(as.factor(phishing)~., 
+               data = train2, 
+               method = "svmLinear", 
+               trControl = resample_method,
+               verbose = TRUE,
+               tuneGrid = SVC_grid,
+               #tuneLength = 50,
+               preProcess = c("center", "scale"),
+               metric = "ROC")
 ```
-
-
 
 Imprimimos los resultados obtenidos por Cross-Validation.
 
 ```{r}
-gbm
+SVC
+```
+```{r}
+plot(SVC, metric= "ROC")
+plot(SVC, metric= "Spec")#ES SENSITIVITY
+plot(SVC, metric= "Sens")#ES Specificity
 ```
 
 ```{r}
-gbm$bestTune
+SVC$bestTune
 ```
 
 ```{r}
-plot(gbm, metric = "ROC")
+SVC$preProcess
+```
+
+
+
+```{r}
+plot(ridge$finalModel, xvar = "lambda")
 ```
 
 ```{r}
-plot(gbm, metric = "ROC", plotType = "level")
-```
-
-```{r, fig.height=8, fig.width=8}
-ggplot(gbm$results, aes(x=interaction.depth, y = ROC, color = as.factor(shrinkage), shape = as.factor(n.trees)))+
-  geom_point(size = 2)+
-  #geom_line()+
-  #expand_limits(y = c(0,1))+
+ggplot(ridge$results, aes(x=lambda, y = Accuracy))+
+  geom_point()+
+  geom_line()+
+  expand_limits(y = c(0,1))+
   theme_bw()
 ```
-
-```{r}
-gbm$results %>%
-  arrange(desc(ROC))
-```
-
-
-
 
 
 ```{r}
@@ -181,20 +166,11 @@ dim(test)
 Matriz de Confusión del modelo entrenado con el set de Test.
 
 ```{r}
-confusionMatrix(data = as.factor(predict(gbm, train)),
-                reference = as.factor(train$phishing),
-                positive = "Phish",
-                mode = "everything")
-```
-
-
-```{r}
-confusionMatrix(data = as.factor(predict(gbm, test)),
+confusionMatrix(data = as.factor(predict(ridge, test)),
                 reference = as.factor(test$phishing),
-                positive = "Phish",
+                positive = "1",
                 mode = "everything")
 ```
-
 
 # Guardar Resultados
 
@@ -203,39 +179,13 @@ En esta parte guardamos los resultados de la optimización de hiperparámetros m
 **REEMPLAZAR EL NOMBRE DEL MODELO**
 
 ```{r}
-#write_csv(gbm$results, file = "Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
+#write_csv(SVC$results,file="SVC.csv")
 ```
 
 ```{r}
-df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
-df_results <- rbind(df_results, gbm$results)
-write_csv(df_results, file = "Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
+df_results <- read_csv("SVC.csv")
+df_results <- rbind(df_results, SVC$results)
+write_csv(df_results, file = "SVC.csv")
 ```
-
-
-```{r}
-df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
-```
-
-
-
-```{r, fig.height=7, fig.width=10}
-df_results %>%
-  filter(ROC > 0.93) %>%
-  ggplot(aes(x = interaction.depth, y = ROC, color = as.factor(shrinkage), shape = as.factor(n.trees)))+
-  geom_point(size = 2)+
-  theme_bw()
-```
-
-
-
-
-
-
-
-
-
-
-
 
 
