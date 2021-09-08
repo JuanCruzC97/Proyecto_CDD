@@ -106,9 +106,9 @@ resample_method <- trainControl(method = "cv",
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-ridge_grid <- expand.grid(mtry = c(5,seq(10,150,20)),
+ridge_grid <- expand.grid(mtry = c(2),
                           splitrule = "gini",
-                          min.node.size = c(1,3, 5, 7))
+                          min.node.size = c(1,3,5,7,13,20,30))
                             
 
 dim(ridge_grid)
@@ -120,6 +120,7 @@ head(ridge_grid)
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 
 ```{r}
+depth=20
 a<- Sys.time()
 
 ridge <- train(as.factor(phishing)~., 
@@ -131,15 +132,26 @@ ridge <- train(as.factor(phishing)~.,
                #preProcess = c("center", "scale"),
                #tuneLength = 25,
                num.trees=150,
-               max.depth=90,
+               max.depth=depth,
                metric = "ROC")
+
+
+aux<-ridge$results
+aux["num.tres"]=150
+aux["max.depth"]=depth
+write_csv(aux, file ="Resultados_RF.csv",append=T)
 b<- Sys.time()
-```
-```{r}
 b-a
+
+```
+
+```{r}
+rf_resultados <- read_csv("Resultados_RF.csv")
+
 ```
 
 Imprimimos los resultados obtenidos por Cross-Validation.
+
 
 ```{r}
 ridge
@@ -160,16 +172,6 @@ plot(ridge$results, xvar = "min.node.size")
 plot(df_results, xvar = "min.node.size")
 ```
 
-```{r}
-plot2<-rf_resultados %>%
-  filter(num.trees == 150)
-ggplot(plot2, aes(x=min.node.size, y = ROC,color=as.factor(mtry)))+
-  geom_point()+
-  geom_line()+
-  #expand_limits(y = c(0,1))+
-  
-  theme_bw()
-```
 
 
 ```{r}
@@ -192,26 +194,75 @@ En esta parte guardamos los resultados de la optimización de hiperparámetros m
 
 **REEMPLAZAR EL NOMBRE DEL MODELO**
 ```{r}
-aux<-ridge$results
-aux["num.tres"]=150
-aux["max.depth"]=70
+
 ```
 
 ```{r}
 getwd()
-write_csv(aux, file ="Resultados_RF.csv",append=T)
+
 ```
 
 ```{r}
 getwd()
 rf_resultados <- read_csv("Resultados_RF.csv")
 
-df_results <- rbind(aux, a)
-write_csv(df_results, file = "Resultados_RF.csv")
+write_csv(rf_resultados,"Resultados_RF.csv")
 ```
 
 ```{r}
+rm(list=ls())
+library(caret)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(ranger)
+
+rf_resultados <- read_csv("Resultados_RF.csv")
+```
+
+```{r}
+plot2<-rf_resultados %>%
+  filter(num.trees == 150
+         ,max.depth!=0
+         #,ROC>0.933
+         #,min.node.size==c(30)
+         ,mtry %in% c(1,2,5,150)
+         #,mtry==c(5,70,150)
+         )
+ggplot(plot2, aes(x=max.depth, y = ROC,color=as.factor(mtry)))+
+  geom_point(size=3,position=position_jitter(h=0, w=3))+
+  #geom_smooth()+
+  #geom_line()+
+  #expand_limits(y = c(0,1))+
+  theme_bw()
 
 ```
 
+
+```{r}
+plot2<-rf_resultados %>%
+  filter(num.trees == 150
+         ,max.depth==130
+         )
+ggplot(plot2, aes(x=mtry, y = ROC,color=as.factor(min.node.size)))+
+  geom_point(size=3,position=position_jitter(h=0, w=3))+
+  #geom_smooth()+
+  geom_line()+
+  #expand_limits(y = c(0,1))+
+  theme_bw()
+```
+
+```{r}
+plot2<-rf_resultados %>%
+  filter(num.trees == 150,
+         max.depth!=0
+         
+         )
+ggplot(plot2, aes(x=min.node.size, y = ROC,shape=as.factor(mtry)))+
+  geom_point(size=3,position=position_jitter(h=0, w=3))+
+  #geom_smooth()+
+  #geom_line()+
+  #expand_limits(y = c(0,1))+
+  theme_bw()
+```
 
