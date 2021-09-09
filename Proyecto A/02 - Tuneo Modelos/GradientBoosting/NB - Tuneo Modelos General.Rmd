@@ -25,6 +25,11 @@ data <- read_csv('Proyecto A/00 - Creación Dataset y Variables/Dataset_Modelos.
 ```
 
 ```{r}
+table(data$phishing)
+```
+
+
+```{r}
 # Windows
 #data <- read_csv('../00 - Creación Dataset y Variables/Dataset_Modelos.csv')
 ```

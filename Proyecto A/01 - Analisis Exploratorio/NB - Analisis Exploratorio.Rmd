@@ -163,12 +163,68 @@ attr_summary <- function(variable, respuesta, data, type = "continua", cont_plot
 # Análisis Exploratorio
 
 ```{r}
-names(data)
+table(data$suffix2)
 ```
 
 
 ```{r}
-attr_summary(data$metric_ds_amazon, data$phishing, data, type = "continua")
+names(data)
+```
+
+```{r}
+attr_summary(data$suf_net, data$phishing, data, type = "categorica")
+```
+
+# Imágenes Informe
+
+```{r, fig.height=5, fig.width=8}
+ggplot(data, aes(x = metric_ds_amazon, fill = as.factor(phishing)))+
+      geom_histogram(alpha = 0.5, position = "dodge", bins = 60)+
+      labs(title = "Histograma Métrica Amazon",
+          x = "Métrica - Amazon",
+          y = "",
+          fill = "Phishing")+
+      theme_bw()
+
+ggplot(data, aes(x = metric_ds_rakuten, fill = as.factor(phishing)))+
+      geom_histogram(alpha = 0.5, position = "dodge", bins = 60)+
+      labs(title = "Histograma Métrica Rakuten",
+          x = "Métrica - Rakuten",
+          y = "",
+          fill = "Phishing")+
+      theme_bw()
+
+ggplot(data, aes(x = dom_car_dif, fill = as.factor(phishing)))+
+      geom_histogram(alpha = 0.5, position = "dodge", bins = 60)+
+      labs(title = "Histograma Caracteres Diferentes Dominio",
+          x = "Número de Caracteres Diferentes - Dominio",
+          y = "",
+          fill = "Phishing")+
+      theme_bw()
+
+ggplot(data, aes(x = suf_net, fill = as.factor(phishing)))+
+    geom_bar(alpha = 0.8, color = "black", position = "fill")+
+    labs(title = "Barplot Sufijo .net",
+         x = "Sufijo .net",
+         y = "Proporción",
+         fill = "Phishing")+
+    theme_bw()
+```
+
+```{r}
+data %>%
+  group_by(phishing) %>%
+  select(dom_car_dif) %>%
+  summarise(Media = median(dom_car_dif))
+```
+
+
+```{r}
+attr_summary(data$metric_ds_rakuten, data$phishing, data, type = "continua")
+```
+
+```{r}
+attr_summary(data$dom_car_dif, data$phishing, data, type = "continua")
 ```
 
 ```{r}
