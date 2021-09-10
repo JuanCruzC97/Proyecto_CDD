@@ -53,12 +53,6 @@ df <- data %>%
   select(-char_vars)
 ```
 
-```{r}
-sin_var<-df[,1:43]
-df<-sin_var
-colnames(df)
-```
-
 
 ```{r}
 names(df)
@@ -130,7 +124,7 @@ a<- Sys.time()
 
 ridge <- train(as.factor(phishing)~., 
                data = train, 
-               method = "ranger", 
+               method = "nb", 
                trControl = resample_method,
                verbose = TRUE,
                tuneGrid = ridge_grid,
