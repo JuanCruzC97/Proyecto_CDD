@@ -1,0 +1,107 @@
+---
+title: "NB - GBM Model Test"
+output: html_document
+---
+
+# Paquetes
+
+```{r}
+library(caret)
+library(readr)
+library(dplyr)
+library(ggplot2)
+```
+
+# Dataset
+
+```{r}
+# Linux
+data <- read_csv('Proyecto A/00 - Creación Dataset y Variables/Dataset_Modelos.csv')
+```
+
+Eliminamos las variables con caracteres para crear las particiones de train y test.
+
+```{r}
+char_vars <- c("X1", 
+               "url", 
+               "scheme", 
+               "domain_complete", 
+               "domain", 
+               "subdomain", 
+               "suffix", 
+               "domain_subdomain", 
+               "path", 
+               "suffix2")
+
+df <- data %>%
+  select(-char_vars)
+```
+
+
+```{r}
+set.seed(45)
+train_index <- createDataPartition(y = df$phishing, times = 1, p = 0.80, list = FALSE)
+
+train <- df[train_index,]
+test <- df[-train_index,]
+
+train <- train %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish")))
+test <- test %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish")))
+
+rm(df)
+
+#test1 <- df[-train_index,]
+
+#test_index <- createDataPartition(y = test1$phishing, times = 1, p = 0.5, list = FALSE)
+
+#test <- test1[test_index,]
+#validation <- test1[-test_index,]
+```
+
+
+```{r}
+fitControl <- trainControl(method = "none", classProbs = TRUE)
+```
+
+```{r}
+gbm2 <- train(phishing~., 
+             data = train, 
+             method = "gbm", 
+             trControl = fitControl,
+             verbose = TRUE,
+             tuneGrid = data.frame(interaction.depth = 18,
+                                       n.trees = 250,
+                                       shrinkage = 0.11,
+                                       n.minobsinnode = 20),
+             train.fraction = 0.75,
+             #tuneLength = 50,
+             #preProcess = c("center", "scale"),
+             metric = "ROC")
+```
+
+```{r}
+data.frame("Iter" = 1:250,
+           "TrainErr" = gbm$finalModel$train.error) %>%
+  ggplot()+
+  geom_line(aes(x = Iter, y = TrainErr))
+
+gbm$finalModel
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
