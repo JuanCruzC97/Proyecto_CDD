@@ -13,6 +13,7 @@ library(caret)
 library(readr)
 library(dplyr)
 library(ggplot2)
+library(cowplot)
 ```
 
 
@@ -183,9 +184,34 @@ En esta parte guardamos los resultados de la optimización de hiperparámetros m
 ```
 
 ```{r}
-df_results <- read_csv("SVC.csv")
+df_results <- read_csv("SVCR.csv")
 df_results <- rbind(df_results, SVC$results)
-write_csv(df_results, file = "SVC.csv")
+#write_csv(df_results, file = "SVC.csv")
+```
+```{r}
+plot(df_results$sigma,df_results$ROC)
+plot(log(df_results$C),df_results$ROC)
+plot(log(df_results$C),df_results$sigma)
+
+
+
+plot1 <- ggplot(df_results, aes(x=log(C), y=ROC, color=factor(sigma)))+
+geom_point(size=3, position=position_jitter(h=0,w=3))+
+  theme_bw()
+
+plot1
+plot2 <- ggplot(df_results, aes(x=log(C), y=Sens, color=factor(sigma)))+
+geom_point(size=3, position=position_jitter(h=0,w=3))+
+  theme_bw()+
+  theme(legend.position="none")
+plot3 <- ggplot(df_results, aes(x=log(C), y=Spec, color=factor(sigma)))+
+geom_point(size=3, position=position_jitter(h=0,w=3))+
+  theme_bw()+
+  theme(legend.position="none")
+plot_grid(plot1, plot2, plot3)
+```
+```{r}
+with(df_results, symbols(x=log(C), y=sigma, circles=ROC))
 ```
 
 
