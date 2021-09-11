@@ -115,12 +115,13 @@ En esta parte armamos el dataset con los valores de los hiperparámetros que vam
 ```{r}
 ridge_grid <- expand.grid(mtry = c(15),
                           splitrule="gini",
-                          min.node.size = c(3))
+                          min.node.size = c(1))
                             
 
 dim(ridge_grid)
 head(ridge_grid)
 ```
+
 ```{r}
 depth<-c(15,20,30,35,50,70,90,110,130)
 ```
@@ -145,7 +146,7 @@ for (depthi in depth){
 
 
             aux<-ridge$results
-            aux["num.tres"]=1000
+            aux["num.trees"]=1000
             aux["max.depth"]=depthi
             write_csv(aux, file ="Resultados_RF.csv",append=T)
 }
@@ -238,18 +239,21 @@ unique(aux[c("min.node.size")])
 plot2<-aux %>%
   filter(
          #,ROC>0.933
-         #min.node.size %in% c(1,30)
+         min.node.size %in% c(1,5,20,30),
          #,mtry %in% c(1,2,5,50,150)
          mtry %in% c(1,2,5,20,70,150)
          )
-ggplot(plot2, aes(x=max.depth, y = ROC,color=as.factor(mtry)))+
+ggplot(plot2, aes(x=max.depth, y = ROC,shape=as.factor(mtry),color=as.factor(min.node.size)))+
   geom_point(size=3,position=position_jitter(h=0, w=1))+
-  geom_smooth(se=F,
-              span=0.5
-              )+
+  #geom_smooth(se=F,span=0.2)+
   scale_x_continuous(breaks = (seq(10,130, by = 20)))+
-  #geom_line()+
+  geom_line()+
   #expand_limits(y = c(0,1))+
+  labs(title = "Resultados Métrica ROC",
+       subtitle = "Resultados de la métrica ROC para el modelo Random Forests con 5-fold Cross Validation",
+       x = "Profundidad del Árbol",
+       color = "Tamaño minimo del ultimo nodo",
+       shape = "Cantidad de variables")+
   theme_bw()
 
 ```
@@ -271,6 +275,11 @@ ggplot(plot2, aes(x=mtry, y = ROC,
   scale_x_continuous(breaks = (seq(10,130,20)))+
   #geom_line()+
   expand_limits(y = c(0.85,0.95))+
+  labs(title = "Resultados Métrica ROC",
+       subtitle = "Resultados de la métrica ROC para el modelo Random Forests con 5-fold Cross Validation",
+       x = "Cantidad de variables",
+       #shape = "Número de Árboles",
+       color = "Profundidad del Árbol")+
   theme_bw()
 ```
 
@@ -287,6 +296,116 @@ ggplot(plot2, aes(x=min.node.size, y = ROC,
   geom_smooth(se=F)+
   #geom_line()+
   #expand_limits(y = c(0,1))+
+    labs(title = "Resultados Métrica ROC",
+       subtitle = "Resultados de la métrica ROC para el modelo Random Forests con 5-fold Cross Validation",
+       x = "Tamaño minimo del ultimo nodo",
+       shape = "Profundidad máxima",
+       color = "Cantidad de variables")+
   theme_bw()
+```
+
+
+```{r}
+rm(list=ls())
+library(caret)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(ranger)
+
+setwd(getwd())
+```
+
+```{r}
+# Windows
+setwd("~/GitHub/Proyecto_CDD")
+getwd()
+data <- read_csv("./Proyecto A/00 - Creación Dataset y Variables/Dataset_Modelos.csv")
+```
+
+
+```{r}
+char_vars <- c(#"X1", 
+               "...1",
+               "url", 
+               "scheme", 
+               "domain_complete", 
+               "domain", 
+               "subdomain", 
+               "suffix", 
+               "domain_subdomain", 
+               "path", 
+               "suffix2",
+               "path_n_http" 
+               )
+
+df <- data %>%
+  select(-char_vars)
+```
+
+
+```{r}
+set.seed(45)
+train_index <- createDataPartition(y = df$phishing, times = 1, p = 0.80, list = FALSE)
+
+train <- df[train_index,]
+test <- df[-train_index,]
+
+train <- train %>%
+  mutate(phishing = factor(phishing, labels = c("NoPhish", "Phish")))
+test <- test %>%
+  mutate(phishing = factor(phishing, labels = c("NoPhish", "Phish")))
+#test1 <- df[-train_index,]
+
+#test_index <- createDataPartition(y = test1$phishing, times = 1, p = 0.5, list = FALSE)
+
+#test <- test1[test_index,]
+#validation <- test1[-test_index,]
+```
+
+
+```{r}
+fitControl <- trainControl(method ="none", classProbs =TRUE, allowParallel=TRUE)
+```
+
+```{r}
+ridge_grid <- expand.grid(mtry = c(10),
+                          splitrule="gini",
+                          min.node.size = c(1))
+                            
+
+dim(ridge_grid)
+head(ridge_grid)
+```
+
+```{r}
+depthi=130
+a<- Sys.time()
+
+  ridge <- train(as.factor(phishing)~., 
+               data = train, 
+               method = "ranger", 
+               trControl = fitControl,
+               verbose = TRUE,
+               tuneGrid = ridge_grid,
+               #preProcess = c("center", "scale"),
+               #tuneLength = 25,
+               num.trees=1000,
+               max.depth=depthi,
+               metric = "ROC")
+
+#write_csv(aux, file ="Resultados_RF.csv",append=T)
+
+b<- Sys.time()
+b-a
+ridge
+write_csv(rf_resultados,"Resultados_RF.csv")
+saveRDS(ridge, "RF_best_model.rds")
+test["predicted"]=aux
+test <- subset(test, select=c(224,1:223))
+aux <- predict(ridge, test)
+confusionMatrix(aux, test$phishing)
+library(MLeval)
+test1 <- evalm(data.frame(aux, test$phishing))
 ```
 

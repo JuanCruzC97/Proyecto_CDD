@@ -14,7 +14,7 @@ library(caret)
 library(readr)
 library(dplyr)
 library(ggplot2)
-library(ranger)
+#library(ranger)
 
 setwd(getwd())
 ```
@@ -45,9 +45,7 @@ char_vars <- c(#"X1",
                "suffix", 
                "domain_subdomain", 
                "path", 
-               "suffix2",
-               "path_n_http" 
-               )
+               "suffix2")
 
 df <- data %>%
   select(-char_vars)
@@ -55,7 +53,7 @@ df <- data %>%
 
 
 ```{r}
-names(df)
+names(data)
 ```
 
 Partimos el dataset en partición de Train y Test. El objeto *train_index* tendrá el índice de el Train set.
@@ -107,9 +105,10 @@ resample_method <- trainControl(method = "cv",
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-ridge_grid <- expand.grid(mtry = c(10),
-                          splitrule = "gini",
-                          min.node.size = c(1))
+ridge_grid <- expand.grid(fL=1:5,
+                          usekernel=c(TRUE),
+                          adjust = seq(0, 5, by = 1)
+                          )
                             
 
 dim(ridge_grid)
@@ -119,25 +118,25 @@ head(ridge_grid)
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 
 ```{r}
-depth=110
+library(klaR)
 a<- Sys.time()
 
 ridge <- train(as.factor(phishing)~., 
                data = train, 
                method = "nb", 
                trControl = resample_method,
-               verbose = TRUE,
+               #verbose = TRUE,
                tuneGrid = ridge_grid,
                #preProcess = c("center", "scale"),
                #tuneLength = 25,
-               num.trees=150,
-               max.depth=depth,
+
                metric = "ROC")
 
 
 aux<-ridge$results
-aux["num.tres"]=150
-aux["max.depth"]=depth
+write_csv(aux,"Resultados_NB.csv")
+#aux["num.tres"]=150
+#aux["max.depth"]=depth
 #write_csv(aux, file ="Resultados_RF.csv",append=T)
 b<- Sys.time()
 b-a
