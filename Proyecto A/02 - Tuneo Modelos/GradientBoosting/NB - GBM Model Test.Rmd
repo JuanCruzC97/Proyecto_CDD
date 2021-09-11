@@ -10,6 +10,7 @@ library(caret)
 library(readr)
 library(dplyr)
 library(ggplot2)
+library(doMC) 
 ```
 
 # Dataset
@@ -38,6 +39,7 @@ df <- data %>%
 ```
 
 
+
 ```{r}
 set.seed(45)
 train_index <- createDataPartition(y = df$phishing, times = 1, p = 0.80, list = FALSE)
@@ -49,6 +51,9 @@ train <- train %>%
   mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish")))
 test <- test %>%
   mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish")))
+
+#train <- train[,1:44]
+#test <- test[,1:44]
 
 rm(df)
 
@@ -62,11 +67,12 @@ rm(df)
 
 
 ```{r}
-fitControl <- trainControl(method = "none", classProbs = TRUE)
+registerDoMC(cores = 4)
+fitControl <- trainControl(method = "none", classProbs = TRUE, allowParallel = TRUE)
 ```
 
 ```{r}
-gbm2 <- train(phishing~., 
+gbm <- train(phishing~., 
              data = train, 
              method = "gbm", 
              trControl = fitControl,
@@ -75,33 +81,110 @@ gbm2 <- train(phishing~.,
                                        n.trees = 250,
                                        shrinkage = 0.11,
                                        n.minobsinnode = 20),
-             train.fraction = 0.75,
+             train.fraction = 1,
              #tuneLength = 50,
              #preProcess = c("center", "scale"),
              metric = "ROC")
 ```
 
 ```{r}
-data.frame("Iter" = 1:250,
-           "TrainErr" = gbm$finalModel$train.error) %>%
-  ggplot()+
-  geom_line(aes(x = Iter, y = TrainErr))
-
-gbm$finalModel
+getwd()
+saveRDS(gbm2, "Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM_sinMetric.rds")
+gbm2 <- readRDS("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.rds")
 ```
 
 
 
+```{r}
+data.frame("Iter" = 1:250,
+           "TrainErr" = gbm$finalModel$train.error,
+           "ValidErr" = gbm$finalModel$valid.error) %>%
+  ggplot()+
+  geom_line(aes(x = Iter, y = TrainErr), color = "blue")+
+  geom_line(aes(x = Iter, y = ValidErr), color = "red")
+
+gbm$finalModel
+```
+
+Resultado con las métricas
+
+```{r}
+amazon_test <- data[-train_index,] %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish"))) %>%
+  arrange(desc(metric_ds_amazon)) %>%
+  filter(metric_ds_amazon > 0.7) %>%
+  select(-char_vars)
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(gbm, amazon_test)),
+                reference = as.factor(amazon_test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+
+Resultado sin métricas
+
+```{r}
+amazon_test <- data[-train_index,] %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish"))) %>%
+  arrange(desc(metric_ds_amazon)) %>%
+  filter(metric_ds_amazon > 0.7) %>%
+  select(-char_vars)
+amazon_test <- amazon_test[,1:44]
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(gbm, amazon_test)),
+                reference = as.factor(amazon_test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
 
 
 
+```{r}
+rakuten_test <- data[-train_index,] %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish"))) %>%
+  arrange(desc(metric_ds_rakuten)) %>%
+  filter(metric_ds_rakuten > 0.7) %>%
+  select(-char_vars)
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(gbm2, rakuten_test)),
+                reference = as.factor(rakuten_test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+
+Resultado sin métricas
+
+```{r}
+rakuten_test <- data[-train_index,] %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish"))) %>%
+  arrange(desc(metric_ds_rakuten)) %>%
+  filter(metric_ds_rakuten > 0.7) %>%
+  select(-char_vars)
+rakuten_test <- rakuten_test[,1:44]
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(gbm, rakuten_test)),
+                reference = as.factor(rakuten_test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
 
 
 
-
-
-
-
-
+```{r}
+confusionMatrix(data = as.factor(predict(gbm, test)),
+                reference = as.factor(test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
 
 
