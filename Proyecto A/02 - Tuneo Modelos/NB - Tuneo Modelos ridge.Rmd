@@ -191,4 +191,28 @@ df_results<-ridge$results
 write_csv(df_results, file = "ridge roc.csv",append = T)
 ```
 
+# Graficos del training
+```{r}
+ridge_results <- read_csv('ridge roc.csv')
+lasso_results <- read_csv('lasso roc.csv')
+resultados<-rbind(ridge_results[,0:8],lasso_results[,0:8])
+plot2<-rf_resultados %>%
+  filter(num.trees == 150
+         ,max.depth!=0
+         #,ROC>0.933
+         #,min.node.size==c(30)
+         ,mtry %in% c(1,2,5,150)
+         #,mtry==c(5,70,150)
+         )
+general_results<-append(lasso_results,ridge_results)
+ggplot(resultados, aes(x=lambda, y = ROC,
+                          color=as.factor(alpha)
+                          ))+
+  geom_point(size=3,position=position_jitter(h=0, w=0.02))+
+  #geom_smooth()+
+  #geom_line()+
+  expand_limits(x=c(0,1))+
+  theme_bw()
+```
+
 
