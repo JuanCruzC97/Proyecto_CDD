@@ -219,16 +219,7 @@ write_csv(df_results, file = "Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM
 
 
 ```{r}
-df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.csv")
-```
-
-```{r}
-df_results2 <- read_csv("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM_K.csv")
-```
-
-```{r}
-df_results <- rbind(df_results, df_results2)
-write_csv(df_results, file = "GBM_Complete.csv")
+df_results <- read_csv("Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM_Complete.csv")
 ```
 
 
@@ -239,14 +230,30 @@ names(df_results)
 
 ```{r, fig.height=7, fig.width=10}
 df_results %>%
-  filter(ROC > 0.9375) %>%
+  filter(ROC > 0.925,
+         n.minobsinnode == 20) %>%
   ggplot(aes(x = interaction.depth, y = ROC, color = as.factor(shrinkage), shape = as.factor(n.trees)))+
-  geom_point(size = 2)+
+  geom_point(size = 3)+
+  #geom_smooth(se = FALSE)+
   geom_line()+
+  labs(title = "Resultados Métrica ROC",
+       subtitle = "Resultados de la métrica ROC para el modelo Gradient Boosting con 5-fold Cross Validation",
+       x = "Profundidad del Árbol",
+       shape = "Número de Árboles",
+       color = "Paso de Aprendizaje")+
   theme_bw()
 ```
 
 
+```{r}
+df_results %>%
+ggplot(aes(x=max.depth, y = ROC,color=as.factor(mtry)))+
+  geom_point(size=3,position=position_jitter(h=0, w=3))+
+  #geom_smooth()+
+  #geom_line()+
+  #expand_limits(y = c(0,1))+
+  theme_bw()
+```
 
 
 
