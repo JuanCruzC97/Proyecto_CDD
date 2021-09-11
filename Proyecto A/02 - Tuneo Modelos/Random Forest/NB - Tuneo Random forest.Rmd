@@ -113,22 +113,25 @@ resample_method <- trainControl(method = "cv",
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-ridge_grid <- expand.grid(mtry = c(10),
-                          splitrule = "gini",
-                          min.node.size = c(1))
+ridge_grid <- expand.grid(mtry = c(15),
+                          splitrule="gini",
+                          min.node.size = c(3))
                             
 
 dim(ridge_grid)
 head(ridge_grid)
 ```
+```{r}
+depth<-c(15,20,30,35,50,70,90,110,130)
+```
 
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 
 ```{r}
-depth=110
+depth<-c(130)
 a<- Sys.time()
-
-ridge <- train(as.factor(phishing)~., 
+for (depthi in depth){
+  ridge <- train(as.factor(phishing)~., 
                data = train, 
                method = "ranger", 
                trControl = resample_method,
@@ -136,15 +139,16 @@ ridge <- train(as.factor(phishing)~.,
                tuneGrid = ridge_grid,
                #preProcess = c("center", "scale"),
                #tuneLength = 25,
-               num.trees=150,
-               max.depth=depth,
+               num.trees=1000,
+               max.depth=depthi,
                metric = "ROC")
 
 
-aux<-ridge$results
-aux["num.tres"]=150
-aux["max.depth"]=depth
-#write_csv(aux, file ="Resultados_RF.csv",append=T)
+            aux<-ridge$results
+            aux["num.tres"]=1000
+            aux["max.depth"]=depthi
+            write_csv(aux, file ="Resultados_RF.csv",append=T)
+}
 b<- Sys.time()
 b-a
 
@@ -227,7 +231,7 @@ rf_resultados <- read_csv("Resultados_RF.csv")
 aux<-rf_resultados %>%
   filter(num.trees==150,
          max.depth!=0)
-sum(unique(aux[c("min.node.size")]))
+unique(aux[c("min.node.size")])
 ```
 
 ```{r}
@@ -241,7 +245,7 @@ plot2<-aux %>%
 ggplot(plot2, aes(x=max.depth, y = ROC,color=as.factor(mtry)))+
   geom_point(size=3,position=position_jitter(h=0, w=1))+
   geom_smooth(se=F,
-              span=0.7
+              span=0.5
               )+
   scale_x_continuous(breaks = (seq(10,130, by = 20)))+
   #geom_line()+
@@ -254,7 +258,7 @@ ggplot(plot2, aes(x=max.depth, y = ROC,color=as.factor(mtry)))+
 ```{r}
 plot2<-aux %>%
   filter(
-         max.depth %in% c(10,20,50,130)
+         max.depth %in% c(10,20,30,50,110,130)
          #,min.node.size %in% c(1,7,30)
          
          )
@@ -273,8 +277,8 @@ ggplot(plot2, aes(x=mtry, y = ROC,
 ```{r}
 plot2<-aux %>%
   filter(
-         mtry %in% c(1,20,150),
-         max.depth %in% c(10,50,90,130)
+         mtry %in% c(1,20,70,150),
+         max.depth %in% c(10,30,35,50,90,130)
          )
 ggplot(plot2, aes(x=min.node.size, y = ROC,
                   shape=as.factor(max.depth),
