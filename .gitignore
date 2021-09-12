@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 *.joblib
+*.rds
 
 GBM.rds
 Dataset_Modelos.csv
