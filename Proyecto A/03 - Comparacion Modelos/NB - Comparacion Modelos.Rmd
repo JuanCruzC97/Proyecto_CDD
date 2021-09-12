@@ -69,35 +69,31 @@ lasso <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/Lasso.r
 # Train
 
 ```{r}
-mat <- confusionMatrix(data = as.factor(predict(ridge, train)),
+mat_ridge1 <- confusionMatrix(data = as.factor(predict(ridge, train)),
                 reference = as.factor(train$phishing),
                 positive = "Phish",
                 mode = "everything")
-print(mat)
-```
-
-```{r}
-mat$overall
-mat$byClass
+print(mat_ridge1)
 ```
 
 
 ```{r}
-confusionMatrix(data = as.factor(predict(lasso, train)),
+mat_lasso1 <- confusionMatrix(data = as.factor(predict(lasso, train)),
                 reference = as.factor(train$phishing),
                 positive = "Phish",
                 mode = "everything")
+print(mat_lasso1)
 ```
 
 ```{r}
-confusionMatrix(data = as.factor(predict(rf, train)),
+mat_rf1 <- confusionMatrix(data = as.factor(predict(rf, train)),
                 reference = as.factor(train$phishing),
                 positive = "Phish",
                 mode = "everything")
 ```
 
 ```{r}
-confusionMatrix(data = as.factor(predict(gbm, train)),
+mat_gbm1 <- confusionMatrix(data = as.factor(predict(gbm, train)),
                 reference = as.factor(train$phishing),
                 positive = "Phish",
                 mode = "everything")
@@ -106,30 +102,117 @@ confusionMatrix(data = as.factor(predict(gbm, train)),
 # Test
 
 ```{r}
-confusionMatrix(data = as.factor(predict(ridge, test)),
+mat_ridge2 <- confusionMatrix(data = as.factor(predict(ridge, test)),
                 reference = as.factor(test$phishing),
                 positive = "Phish",
                 mode = "everything")
 ```
 
 ```{r}
-confusionMatrix(data = as.factor(predict(lasso, test)),
+mat_lasso2 <- confusionMatrix(data = as.factor(predict(lasso, test)),
                 reference = as.factor(test$phishing),
                 positive = "Phish",
                 mode = "everything")
 ```
 
 ```{r}
-confusionMatrix(data = as.factor(predict(rf, test)),
+mat_rf2 <- confusionMatrix(data = as.factor(predict(rf, test)),
                 reference = as.factor(test$phishing),
                 positive = "Phish",
                 mode = "everything")
 ```
 
 ```{r}
-confusionMatrix(data = as.factor(predict(gbm, test)),
+mat_gbm2 <- confusionMatrix(data = as.factor(predict(gbm, test)),
                 reference = as.factor(test$phishing),
                 positive = "Phish",
                 mode = "everything")
 ```
+
+
+
+```{r}
+twoClassSummary()
+```
+
+
+
+```{r}
+models <- c("Ridge", "Lasso", "RF", "GBM")
+results <- list(mat_ridge1, mat_lasso1, mat_rf1, mat_gbm1)
+metrics <- c("Accuracy", "Sensitivity", "Specificity", "Precision", "Recall")
+
+vec_models <- c()
+vec_data <- c()
+vec_metric <- c()
+vec_value <- c()
+
+i = 1
+for(result in results){
+  for(metric in metrics){
+    vec_models <- append(vec_models, models[i])
+    vec_data <- append(vec_data, "Train")
+    vec_metric <- append(vec_metric, metric)
+    if(metric == "Accuracy"){
+      vec_value <- append(vec_value, result$overall[metric])  
+    } else {
+      vec_value <- append(vec_value, result$byClass[metric])  
+    }
+  }
+  i = i + 1
+}
+
+train_results <- data.frame("Models" = vec_models,
+                            "Data" = vec_data,
+                            "Metric" = vec_metric,
+                            "Value" = vec_value)
+
+```
+
+```{r}
+models <- c("Ridge", "Lasso", "RF", "GBM")
+results <- list(mat_ridge2, mat_lasso2, mat_rf2, mat_gbm2)
+metrics <- c("Accuracy", "Sensitivity", "Specificity", "Precision", "Recall")
+
+vec_models <- c()
+vec_data <- c()
+vec_metric <- c()
+vec_value <- c()
+
+i = 1
+for(result in results){
+  for(metric in metrics){
+    vec_models <- append(vec_models, models[i])
+    vec_data <- append(vec_data, "Test")
+    vec_metric <- append(vec_metric, metric)
+    if(metric == "Accuracy"){
+      vec_value <- append(vec_value, result$overall[metric])  
+    } else {
+      vec_value <- append(vec_value, result$byClass[metric])  
+    }
+  }
+  i = i + 1
+}
+
+test_results <- data.frame("Models" = vec_models,
+                            "Data" = vec_data,
+                            "Metric" = vec_metric,
+                            "Value" = vec_value)
+
+```
+
+```{r}
+results <- rbind(train_results, test_results)
+write_csv(results, file = "Proyecto A/03 - Comparacion Modelos/Resultados.csv")
+```
+
+
+```{r}
+results %>%
+  filter(Metric == "Accuracy") %>%
+  ggplot(aes(x = reorder(as.factor(Models), -Value), y = Value, color = Data)) +
+  geom_point(size = 3) +
+  theme_bw()
+```
+
 
