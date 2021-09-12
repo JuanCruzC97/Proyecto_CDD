@@ -78,25 +78,19 @@ Armamos los folds de Cross-Validation, usamos k = 5. El objeto *resample_method*
 ```{r}
 set.seed(35)
 k = 5
-CV_folds <- createFolds(train2$phishing, k = k, list = TRUE)
+CV_folds <- createFolds(train$phishing, k = k, list = TRUE)
 
-resample_method <- trainControl(method = "cv",
-                                number = k,
+fitControl <- trainControl(method = "none",
                                 classProbs = TRUE,
-                                summaryFunction = twoClassSummary,
-                                verboseIter = TRUE,
-                                returnData = TRUE,
-                                returnResamp = "final",
-                                savePredictions = "final",
-                                search = "grid",
-                                index = CV_folds ) 
+                                allowParallel = TRUE
+                                ) 
 
 ```
 
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-C_range =    c(0.01,0.011,0.012,0.013,0.014,0.015)
+C_range =    c(0.1)
 sigma_range =  c(0.005, 0.001,0.0025)
 
 SVC_grid <- expand.grid(C= C_range)
@@ -115,14 +109,24 @@ train2 <- train[train_index2,]
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 ```{r}
 SVC <- train(as.factor(phishing)~., 
-               data = train2, 
-               method = "svmLinear", 
-               trControl = resample_method,
-               verbose = TRUE,
-               tuneGrid = SVC_grid,
-               #tuneLength = 50,
-               preProcess = c("center", "scale"),
-               metric = "ROC")
+             data = train, 
+             method = "svmLinear", 
+             trControl = fitControl,
+             verbose = TRUE,
+             tuneGrid = SVC_grid,
+             #tuneLength = 50,
+             preProcess = c("center", "scale"),
+             metric = "ROC")
+```
+
+
+
+
+
+
+
+```{r}
+saveRDS(SVC, "Proyecto A/02 - Tuneo Modelos/SVM/SVC.rds")
 ```
 
 Imprimimos los resultados obtenidos por Cross-Validation.
@@ -184,10 +188,20 @@ En esta parte guardamos los resultados de la optimización de hiperparámetros m
 ```
 
 ```{r}
-df_results <- read_csv("SVCR.csv")
+df_results <- read_csv("SVC.csv")
 df_results <- rbind(df_results, SVC$results)
 #write_csv(df_results, file = "SVC.csv")
 ```
+
+
+```{r}
+df_results[order(df_results[,3],decreasing=TRUE),]
+```
+
+
+
+
+
 ```{r}
 plot(df_results$sigma,df_results$ROC)
 plot(log(df_results$C),df_results$ROC)
@@ -196,16 +210,16 @@ plot(log(df_results$C),df_results$sigma)
 
 
 plot1 <- ggplot(df_results, aes(x=log(C), y=ROC, color=factor(sigma)))+
-geom_point(size=3, position=position_jitter(h=0,w=3))+
+  geom_point(size=3, position=position_jitter(h=0,w=3))+
   theme_bw()
 
 plot1
 plot2 <- ggplot(df_results, aes(x=log(C), y=Sens, color=factor(sigma)))+
-geom_point(size=3, position=position_jitter(h=0,w=3))+
+  geom_point(size=3, position=position_jitter(h=0,w=3))+
   theme_bw()+
   theme(legend.position="none")
 plot3 <- ggplot(df_results, aes(x=log(C), y=Spec, color=factor(sigma)))+
-geom_point(size=3, position=position_jitter(h=0,w=3))+
+  geom_point(size=3, position=position_jitter(h=0,w=3))+
   theme_bw()+
   theme(legend.position="none")
 plot_grid(plot1, plot2, plot3)
