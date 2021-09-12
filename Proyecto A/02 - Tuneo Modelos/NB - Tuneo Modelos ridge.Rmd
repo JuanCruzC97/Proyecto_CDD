@@ -91,12 +91,22 @@ resample_method <- trainControl(method = "cv",
                                 index = CV_folds)
 
 ```
+```{r}
+set.seed(53)
+k = 5
+CV_folds <- createFolds(train$phishing, k = k, list = TRUE)
+
+TrainControl <- trainControl(method = "none",
+                                classProbs = TRUE,
+                                allowParallel= TRUE)
+
+```
 
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
 ridge_grid <- expand.grid(alpha = 0,
-                          lambda = seq(0.02 , 0.03 , 0.0001))
+                          lambda = 0.01)
 
 
 dim(ridge_grid)
@@ -109,7 +119,7 @@ Corriendo esta celda se realiza Cross-Validation probando todas las combinacione
 ridge <- train(as.factor(phishing)~., 
                data = train, 
                method = "glmnet", 
-               trControl = resample_method,
+               trControl = TrainControl,
                verbose = TRUE,
                tuneGrid = ridge_grid,
                #tuneLength = 50,
@@ -178,7 +188,8 @@ getwd()
 ```
 
 ```{r}
-#write_csv(ridge$results, file = 'ridge roc.csv')
+ridge$results
+write_csv(ridge$results, file = 'ridge roc.csv')
 ```
 
 ```{r}
@@ -196,23 +207,34 @@ write_csv(df_results, file = "ridge roc.csv",append = T)
 ridge_results <- read_csv('ridge roc.csv')
 lasso_results <- read_csv('lasso roc.csv')
 resultados<-rbind(ridge_results[,0:8],lasso_results[,0:8])
-plot2<-rf_resultados %>%
-  filter(num.trees == 150
-         ,max.depth!=0
+resultados<-resultados%>%
+  mutate(alpha=as.factor(ifelse(alpha==0, 'Ridge','Lasso')))%>%
+  filter(lambda<0.25, lambda>0.01)
+#plot<-resultados %>%
+  #filter(lambda>=0, lambda<=0.1
+         #,max.depth!=0
          #,ROC>0.933
          #,min.node.size==c(30)
-         ,mtry %in% c(1,2,5,150)
+         #,mtry %in% c(1,2,5,150)
          #,mtry==c(5,70,150)
-         )
-general_results<-append(lasso_results,ridge_results)
-ggplot(resultados, aes(x=lambda, y = ROC,
+         #)
+ggplot(resultados, aes(x=lambda, y = Spec,
                           color=as.factor(alpha)
                           ))+
-  geom_point(size=3,position=position_jitter(h=0, w=0.02))+
+  geom_point(size=1,position=position_jitter(h=0, w=0))+
   #geom_smooth()+
-  #geom_line()+
-  expand_limits(x=c(0,1))+
+  geom_line()+
+  expand_limits(x=c(0.01,0.25))+
+  labs(title = "Resultados Métrica Sens",
+       subtitle = "Regresion Logistica  con 5 folds de Cross Validation",
+       x = "Lambda", y="Sens",
+       #shape = "Número de Árboles",
+       color = "Regularizacion")+
   theme_bw()
 ```
 
+```{r}
+getwd()
+saveRDS(ridge, "Ridge.rds")
+```
 
