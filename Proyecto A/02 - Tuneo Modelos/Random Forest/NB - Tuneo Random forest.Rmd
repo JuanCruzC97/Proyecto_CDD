@@ -402,6 +402,8 @@ ridge
 write_csv(rf_resultados,"Resultados_RF.csv")
 saveRDS(ridge, "RF_best_model.rds")
 test["predicted"]=aux
+getwd()
+ridge <- readRDS("./Proyecto A/02 - Tuneo Modelos/GradientBoosting/GBM.rds")
 test <- subset(test, select=c(224,1:223))
 aux <- predict(ridge, test)
 confusionMatrix(aux, test$phishing)
