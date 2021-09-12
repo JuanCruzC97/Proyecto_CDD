@@ -239,16 +239,23 @@ write_csv(results, file = "Proyecto A/03 - Comparacion Modelos/Resultados.csv")
 
 
 ```{r}
-
+results <- read_csv("Proyecto A/03 - Comparacion Modelos/Resultados.csv")
 ```
 
 
 ```{r}
-results %>%
-  filter(Metric == "Accuracy") %>%
+metrics <- c("Accuracy", "Sensitivity", "Specificity", "Precision", "Recall")
+for (metric in metrics){
+  print(results %>%
+  filter(Metric == metric) %>%
   ggplot(aes(x = reorder(as.factor(Models), -Value), y = Value, color = Data)) +
   geom_point(size = 3) +
-  theme_bw()
+  expand_limits(y = c(0.80,1)) +
+  labs(title = metric,
+       y = metric,
+       x = "Modelos") +
+  theme_bw())
+}
 ```
 
 
