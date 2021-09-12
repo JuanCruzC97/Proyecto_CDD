@@ -32,8 +32,9 @@ results %>%
 ```{r, fig.height= 8, fig.width= 12}
 results %>%
   #filter(Metric %in% c("Accuracy", "Sensitivity", "Specificity")) %>%
-  ggplot(aes(x = reorder(as.factor(Models), -Value), y = Value, color = Data)) +
+  ggplot(aes(x = reorder(as.factor(Models), -Value), y = Value, color = Data, group = Data)) +
   geom_point(size = 3) +
+  geom_line() +
   expand_limits(y = c(0.80,1)) +
   labs(title = metric,
        y = metric,
@@ -48,8 +49,9 @@ metrics <- c("Accuracy", "Sensitivity", "Specificity", "Precision", "Recall")
 for (metric in metrics){
   print(results %>%
   filter(Metric == metric) %>%
-  ggplot(aes(x = reorder(as.factor(Models), -Value), y = Value, color = Data)) +
+  ggplot(aes(x = reorder(as.factor(Models), -Value), y = Value, color = Data, group = Data)) +
   geom_point(size = 3) +
+  geom_line() +
   expand_limits(y = c(0.80,1)) +
   labs(title = metric,
        y = metric,
