@@ -60,6 +60,8 @@ rm(df)
 
 ```{r}
 getwd()
+svm <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/SVC.rds")
+svmr <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/SVCR.rds")
 gbm <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/GBM.rds")
 rf <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/RF.rds")
 ridge <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/Ridge.rds")
@@ -83,6 +85,20 @@ mat_lasso1 <- confusionMatrix(data = as.factor(predict(lasso, train)),
                 positive = "Phish",
                 mode = "everything")
 print(mat_lasso1)
+```
+
+```{r}
+mat_svm1 <- confusionMatrix(data = as.factor(predict(svm, train)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+```{r}
+mat_svmr1 <- confusionMatrix(data = as.factor(predict(svmr, train)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
 ```
 
 ```{r}
@@ -114,6 +130,21 @@ mat_lasso2 <- confusionMatrix(data = as.factor(predict(lasso, test)),
                 positive = "Phish",
                 mode = "everything")
 ```
+
+```{r}
+mat_svm2 <- confusionMatrix(data = as.factor(predict(svm, test)),
+                reference = as.factor(test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+```{r}
+mat_svmr2 <- confusionMatrix(data = as.factor(predict(svmr, test)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
 
 ```{r}
 mat_rf2 <- confusionMatrix(data = as.factor(predict(rf, test)),
@@ -204,6 +235,11 @@ test_results <- data.frame("Models" = vec_models,
 ```{r}
 results <- rbind(train_results, test_results)
 write_csv(results, file = "Proyecto A/03 - Comparacion Modelos/Resultados.csv")
+```
+
+
+```{r}
+
 ```
 
 
