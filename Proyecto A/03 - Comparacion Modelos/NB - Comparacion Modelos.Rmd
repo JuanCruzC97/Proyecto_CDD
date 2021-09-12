@@ -1,0 +1,135 @@
+---
+title: "Comparacion de Modelos"
+output: html_document
+---
+
+# Paquetes
+
+```{r}
+library(caret)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(doMC) 
+```
+
+# Dataset
+
+```{r}
+# Linux
+data <- read_csv('Proyecto A/00 - Creación Dataset y Variables/Dataset_Modelos.csv')
+```
+
+Eliminamos las variables con caracteres para crear las particiones de train y test.
+
+```{r}
+char_vars <- c("X1", 
+               "url", 
+               "scheme", 
+               "domain_complete", 
+               "domain", 
+               "subdomain", 
+               "suffix", 
+               "domain_subdomain", 
+               "path", 
+               "suffix2")
+
+df <- data %>%
+  select(-char_vars)
+```
+
+```{r}
+set.seed(45)
+train_index <- createDataPartition(y = df$phishing, times = 1, p = 0.80, list = FALSE)
+
+train <- df[train_index,]
+test <- df[-train_index,]
+
+train <- train %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish")))
+test <- test %>%
+  mutate(phishing = factor(ifelse(phishing==1, "Phish", "NoPhish")))
+
+#train <- train[,1:44]
+#test <- test[,1:44]
+
+rm(df)
+```
+
+
+
+```{r}
+getwd()
+gbm <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/GBM.rds")
+rf <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/RF.rds")
+ridge <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/Ridge.rds")
+lasso <- readRDS("Proyecto A/03 - Comparacion Modelos/Modelos Entrenados/Lasso.rds")
+```
+
+# Train
+
+```{r}
+mat <- confusionMatrix(data = as.factor(predict(ridge, train)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
+print(mat)
+```
+
+```{r}
+mat$overall
+mat$byClass
+```
+
+
+```{r}
+confusionMatrix(data = as.factor(predict(lasso, train)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(rf, train)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(gbm, train)),
+                reference = as.factor(train$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+# Test
+
+```{r}
+confusionMatrix(data = as.factor(predict(ridge, test)),
+                reference = as.factor(test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(lasso, test)),
+                reference = as.factor(test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(rf, test)),
+                reference = as.factor(test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
+```{r}
+confusionMatrix(data = as.factor(predict(gbm, test)),
+                reference = as.factor(test$phishing),
+                positive = "Phish",
+                mode = "everything")
+```
+
