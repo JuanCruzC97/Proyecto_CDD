@@ -11,6 +11,7 @@ library(readr)
 library(dplyr)
 library(ggplot2)
 library(doMC) 
+library(ggpubr)
 ```
 
 # Dataset
@@ -239,6 +240,7 @@ test_results <- data.frame("Models" = vec_models,
                             "Value" = vec_value)
 
 ```
+
 ```{r}
 train_results
 test_results
@@ -248,15 +250,8 @@ test_results
 results_SVM <- rbind(train_results, test_results)
 write_csv(results_SVM, file = "Resultados.csv", append=T)
 ```
-```{r}
-
-```
 
 
-```{r}
-results <- read_csv("Resultados.csv")
-```
-results<-rbind
 
 ```{r}
 metrics <- c("Accuracy", "Sensitivity", "Specificity", "Precision", "Recall")
@@ -272,5 +267,45 @@ for (metric in metrics){
   theme_bw())
 }
 ```
+
+
+```{r}
+results_proba <- data.frame("Phishing" = test$phishing,
+                            "PredictProba" = predict(gbm, test, type = "prob"),
+                            "URL" = data[-train_index,]$url)
+
+
+results_proba
+```
+
+
+```{r, fig.width= 12, fig.height=6, warning=FALSE}
+# Generamos el primer plot - Scatterplot
+plot_prob1 <- ggplot(results_proba, aes(x = PredictProba.Phish, y = Phishing, color = Phishing))+
+  geom_jitter(height = 0.2, width = 0, alpha = 0.3)+
+  labs(title = "Scatterplot: Clase vs Probabilidad Estimada",
+       #subtitle = "Mientras mayor sea la diferencia entre las clases ",
+       x = "Probabilidad Estimada",
+       y = "Clase")+
+  theme_bw()
+
+# Generamos el segundo plot - Histograma
+plot_prob2 <- ggplot(results_proba, aes(PredictProba.Phish, fill = Phishing))+
+  geom_histogram(position = "identity", alpha = 0.6, bins = 45)+
+  labs(title = "Histograma: Probabilidades Predichas",
+       #subtitle = "Si no hay intersección con un determinado threshold tendríamos discriminación perfecta",
+       x = "Probabilidad Estimada",
+       y = "")+
+  theme_bw()
+
+# Graficamos ambos plots en conjunto
+ggarrange(plot_prob1, plot_prob2, ncol = 2, nrow = 1)
+```
+
+
+
+
+
+
 
 
