@@ -59,3 +59,41 @@ for (metric in metrics){
   theme_bw())
 }
 ```
+
+
+```{r}
+results %>%
+  filter(Data == "Test",
+         Metric %in% c("Accuracy", "Sensitivity", "Specificity")) %>%
+  ggplot()+
+  geom_col(aes(x = Metric, y = Value, fill = reorder(as.factor(Models), -Value)), position = "dodge", color = "black")+
+  expand_limits(y = c(0,1)) +
+  scale_fill_brewer(direction = -1, type = "div")+
+  labs(title = "Comparación Columnas",
+       fill = "Modelos") +
+  #coord_flip() +
+  theme_bw()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
