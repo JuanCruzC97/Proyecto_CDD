@@ -90,27 +90,24 @@ fitControl <- trainControl(method = "none",
 En esta parte armamos el dataset con los valores de los hiperparámetros que vamos a probar. Importante: Las columnas tienen que llevar el nombre de los hiperparámetros de ese modelo en el método (paquete) empleado.
 
 ```{r}
-C_range =    c(0.1)
-sigma_range =  c(0.005, 0.001,0.0025)
+C_range =    c(0.6)
+sigma_range =  c(0.0025)
 
-SVC_grid <- expand.grid(C= C_range)
+SVC_grid <- expand.grid(C= C_range,sigma=sigma_range)
 
-
-dim(SVC_grid)
-View(SVC_grid)
 ```
 
 Reducimos el train set porque tarda demasiado.
 ```{r}
-train_index2 <- createDataPartition(y = train$phishing, times = 1, p = 0.15, list = FALSE)
-train2 <- train[train_index2,]
+#train_index2 <- createDataPartition(y = train$phishing, times = 1, p = 0.15, list = FALSE)
+#train2 <- train[train_index2,]
 ```
 
 Corriendo esta celda se realiza Cross-Validation probando todas las combinaciones de hiperparámetros que determinamos previamente y se entrena el modelo final con todos los datos del Train set y con el set de hiperparámetros óptimos.
 ```{r}
 SVC <- train(as.factor(phishing)~., 
              data = train, 
-             method = "svmLinear", 
+             method = "svmRadial", 
              trControl = fitControl,
              verbose = TRUE,
              tuneGrid = SVC_grid,
@@ -126,7 +123,7 @@ SVC <- train(as.factor(phishing)~.,
 
 
 ```{r}
-saveRDS(SVC, "Proyecto A/02 - Tuneo Modelos/SVM/SVC.rds")
+saveRDS(SVC, "SVCR.rds")
 ```
 
 Imprimimos los resultados obtenidos por Cross-Validation.
@@ -209,18 +206,24 @@ plot(log(df_results$C),df_results$sigma)
 
 
 
-plot1 <- ggplot(df_results, aes(x=log(C), y=ROC, color=factor(sigma)))+
-  geom_point(size=3, position=position_jitter(h=0,w=3))+
-  theme_bw()
-
-plot1
-plot2 <- ggplot(df_results, aes(x=log(C), y=Sens, color=factor(sigma)))+
+plot1 <- ggplot(df_results, aes(x=log(C), y=ROC))+
   geom_point(size=3, position=position_jitter(h=0,w=3))+
   theme_bw()+
+  labs(x="Log(C)",
+       y="ROC")+
   theme(legend.position="none")
-plot3 <- ggplot(df_results, aes(x=log(C), y=Spec, color=factor(sigma)))+
+plot1
+plot2 <- ggplot(df_results, aes(x=log(C), y=Sens))+
   geom_point(size=3, position=position_jitter(h=0,w=3))+
   theme_bw()+
+  labs(x="Log(C)",
+       y="Spec")+
+  theme(legend.position="none")
+plot3 <- ggplot(df_results, aes(x=log(C), y=Spec))+
+  geom_point(size=3, position=position_jitter(h=0,w=3))+
+  theme_bw()+
+  labs(x="Log(C)",
+       y="Sens")+
   theme(legend.position="none")
 plot_grid(plot1, plot2, plot3)
 ```
